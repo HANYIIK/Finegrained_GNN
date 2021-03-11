@@ -1,0 +1,60 @@
+{
+    "load_data": {
+
+      "env": "windows",
+
+      "dataset_name": "MPED",
+      "dataset_size": "small",
+
+      "normalize": 1,
+
+      "path": {
+        "windows": {
+          "mat": "E:/DATASET/GNN_DATASETS/",
+          "npy": "E:/DATASET/GNN_NPY_DATASETS/"
+        },
+        "linux": {
+          "mat": "/media/data/datasets/GNN_DATASETS/",
+          "npy": "/media/data/datasets/GNN_NPY_DATASETS/"
+        }
+      },
+
+      "other": {
+        "MPED": {
+          "people_num": 30,
+          "classes_num": 7
+        },
+        "SEED": {
+          "people_num": 45,
+          "classes_num": 3
+        },
+        "SEED_IV": {
+          "people_num": 15,
+          "classes_num": 4
+        }
+      }
+    },
+
+  "run_para": {
+
+    "model": "ChebNet",
+
+    "batch_size": 100,
+    "max_epochs": 100,
+    "learning_rate": 1e-3,
+    "dropout": 0.3,
+    "feature_len": 5,
+    "node_num": 62,
+
+    "GCN": {
+      "H_0": 5,
+      "H_1": 32,
+      "H_2": 128
+    },
+
+    "ChebNet": {
+      "K": 2,
+      "filter_num": 32
+    }
+  }
+}
