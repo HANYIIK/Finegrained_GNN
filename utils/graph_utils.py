@@ -129,7 +129,6 @@ def replace_random_edges(A, noise_level):
 
 
 def laplacian(W, normalized=True):
-
     """Return the Laplacian of the weight matrix."""
     # Degree matrix.
     d = W.sum(axis=0)
