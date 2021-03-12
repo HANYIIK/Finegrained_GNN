@@ -3,7 +3,7 @@
 # @Time     : 2021/3/10 22:32
 # @Author   : Hanyiik
 # @File     : weight_test.py
-# @Function :
+# @Function : 测试代码
 import torch
 import numpy as np
 
