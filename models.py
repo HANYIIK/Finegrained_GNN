@@ -215,7 +215,7 @@ def get_bbox(x, adjs, indices):
     :: 功能: 为下一个 GNN 产生输入和邻接矩阵集合
     :: 输入: x -
             adjs -
-            indices -  
+            indices -
     :: 输出:
     :: 用法:
     """

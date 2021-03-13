@@ -93,6 +93,7 @@ class GradCam:
             node_heat_mask.append(heat_mask)
 
         node_heat_mask = np.stack(node_heat_mask)   # (100, 62)
+
         cam = np.sign(np.sign(node_heat_mask - self.rate) + 1)
         cam = torch.from_numpy(cam).to(DEVICE)      # (100, 62)
 
@@ -102,4 +103,8 @@ class GradCam:
         if self.flag:
             self.model.train()
 
+        pdb.set_trace()
+
         return indices_list, node_heat_mask
+        # indices_list 是一个由 batch_size 个[选中点的索引]组成的 list, 长度不定
+        # node_heat_mask 是一个 (batch_size, 62) 的 numpy 矩阵, 每行表示每一张图 62 个点的'热力图'
