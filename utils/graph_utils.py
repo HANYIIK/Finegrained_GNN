@@ -7,16 +7,13 @@ import scipy.spatial.distance
 import numpy as np
 
 
-'''
-:: 输入: m
-:: 操作: 将区间 (0,1) 等分成 (m-1) 份，共 m 个数，用于画 (m, m) 的网格
-:: 函数: np.meshgrid([0, 1, 2], [0, 1]) ----> [[0 1 2] [0 1 2]], [[0 0 0] [1 1 1]]
-:: 返回: 网格点的坐标 [[x1 y1] [x2 y2] ... [xm ym]]
-'''
-
-
 def grid(m, dtype=np.float32):
-    """Return the embedding of a grid graph."""
+    """
+    :: 输入: m
+    :: 操作: 将区间 (0,1) 等分成 (m-1) 份，共 m 个数，用于画 (m, m) 的网格
+    :: 函数: np.meshgrid([0, 1, 2], [0, 1]) ----> [[0 1 2] [0 1 2]], [[0 0 0] [1 1 1]]
+    :: 返回: 网格点的坐标 [[x1 y1] [x2 y2] ... [xm ym]]
+    """
     M = m**2
     x = np.linspace(0, 1, m, dtype=dtype)
     y = np.linspace(0, 1, m, dtype=dtype)
@@ -27,14 +24,11 @@ def grid(m, dtype=np.float32):
     return z
 
 
-'''
-:: 函数: np.argsort(X) 将 X 中的元素排序后，提取对应的索引 index 输出
-:: 例如: np.array([1, 4, 3, -1, 6, 9]).argsort() ----> [3 0 2 1 4 5]
-'''
-
-
 def distance_scipy_spatial(z, k=4, metric='euclidean'):
-    """Compute exact pairwise distances."""
+    """
+    :: 函数: np.argsort(X) 将 X 中的元素排序后，提取对应的索引 index 输出
+    :: 例如: np.array([1, 4, 3, -1, 6, 9]).argsort() ----> [3 0 2 1 4 5]
+    """
     d = scipy.spatial.distance.pdist(z, metric)
     d = scipy.spatial.distance.squareform(d)
     # k-NN graph.
@@ -135,17 +129,17 @@ def laplacian(W, normalized=True):
 
     # Laplacian matrix.
     if not normalized:
-        D = scipy.sparse.diags(d.g.squeeze(), 0)
+        D = sp.diags(d.g.squeeze(), 0)
         L = D - W
     else:
         d += np.spacing(np.array(0, W.dtype))
         d = 1 / np.sqrt(d)
-        D = scipy.sparse.diags(d.A.squeeze(), 0)
-        I = scipy.sparse.identity(d.size, dtype=W.dtype)
+        D = sp.diags(d.A.squeeze(), 0)
+        I = sp.identity(d.size, dtype=W.dtype)
         L = I - D * W * D
 
     # assert np.abs(L - L.T).mean() < 1e-9
-    assert type(L) is scipy.sparse.csr.csr_matrix
+    assert type(L) is sp.csr.csr_matrix
     return L
 
 
@@ -159,7 +153,6 @@ def lmax(L, normalized=True):
 
 
 def fourier(L, algo='eigh', k=1):
-
     """Return the Fourier basis, i.e. the EVD of the Laplacian."""
     def sort(lamb, U):
         idx = lamb.argsort()
@@ -241,14 +234,14 @@ def lanczos(L, X, K):
     Xt *= np.linalg.norm(X, axis=0)
     return Xt  # Q[0, ...]
 
-'''
-:: 输入: L
-:: 输出: L_rescale
-    L_rescale = (2 * L / max(lamda) ) - I = L - I
-    max(lamda) = 2
-'''
+
 def rescale_L(L, lamda_max=2):
-    """Rescale the Laplacian eigenvalues in [-1,1]."""
+    """
+    :: 输入: L
+    :: 输出: L_rescale
+            L_rescale = (2 * L / max(lamda) ) - I = L - I
+            max(lamda) = 2
+    """
     M, M = L.shape
     I = sp.identity(M, format='csr', dtype=L.dtype)
     L /= lamda_max / 2

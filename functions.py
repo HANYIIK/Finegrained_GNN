@@ -291,7 +291,7 @@ def get_config():
     :: 输入:
     :: 输出: 一个 Namespace, 长这样:
         Namespace(
-            env='linux'
+            platform='linux'
             dataset_name='SEED'
             dataset_size='small'
             normalize=1
@@ -316,7 +316,7 @@ def get_config():
         或者
 
         Namespace(
-            env='windows'
+            platform='windows'
             dataset_name='MPED'
             dataset_size='small'
             normalize=1
@@ -344,7 +344,7 @@ def get_config():
 
     # 读取 Dataset 的配置
     data_cfg = json.load(open('./config.json'))['load_data']
-    path_cfg = data_cfg['path'][data_cfg['env']]
+    path_cfg = data_cfg['path'][data_cfg['platform']]
     people_cfg = data_cfg['other'][data_cfg['dataset_name']]
     arguments.update(data_cfg)
     arguments.update(path_cfg)

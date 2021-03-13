@@ -4,8 +4,7 @@
 # @Author   : Hanyiik
 # @File     : models.py
 # @Function : Model 部分
-import scipy
-import scipy.sparse as sp
+from scipy.sparse import csr_matrix
 import numpy as np
 import copy
 import pdb
@@ -133,6 +132,7 @@ class FineGrainedGNN(nn.Module):
 
         return logits_gate, nodes_cam_1, nodes_cam_2
 
+
 class ChebshevGCNN(nn.Module):
     """
     :: 功能: 契比雪夫图卷积网络
@@ -236,7 +236,7 @@ def get_bbox(x, adjs, indices):
     for k in range(batch_size):
         new_adj = adj_set_zero(adjs[k], indices[k].cpu().numpy())
         adj_input_box.append(new_adj)
-        adj_input_box_sparse.append(sp.csr_matrix(new_adj))
+        adj_input_box_sparse.append(csr_matrix(new_adj))
 
         tmp = x.cpu().numpy()[k, :, :]
         input_box.append(set_zero(tmp, indices[k].cpu().numpy()))
@@ -247,9 +247,9 @@ def get_bbox(x, adjs, indices):
 # 邻接矩阵置零
 def adj_set_zero(adj_matrix, indices):
     """
-    :: 功能:
-    :: 输入:
-    :: 输出:
+    :: 功能: 把 adj_matrix 按照 indices 中指定的'行'与'列'置零
+    :: 输入: numpy 类型的 adj_matrix
+    :: 输出: 置零后的 numpy 类型的 adj_matrix
     :: 用法:
     """
     input_box = np.zeros_like(adj_matrix)   # (62, 62)
@@ -267,9 +267,9 @@ def adj_set_zero(adj_matrix, indices):
 # 矩阵置零
 def set_zero(matrix, indices):
     """
-    :: 功能: 将 matrix 中 indices 指定的行置零
-    :: 输入:
-    :: 输出:
+    :: 功能: 把 matrix 按照 indices 中指定的'行'置零
+    :: 输入: numpy 类型的 matrix
+    :: 输出: 置零后的 numpy 类型的 matrix
     :: 用法:
     """
     input_box = np.zeros_like(matrix)   # (62, 5)
@@ -278,6 +278,7 @@ def set_zero(matrix, indices):
             if i == item:
                 input_box[i] = np.copy(matrix[i])
     return torch.from_numpy(input_box)
+
 
 def get_laplacians(adj_list_sparse):
     """
@@ -288,19 +289,22 @@ def get_laplacians(adj_list_sparse):
     """
     laplacians_list = []
     for adj_item in adj_list_sparse:
+        # 由 A_sparse 得到 L_sparse
         laplacian = graph_utils.laplacian(adj_item, normalized=True)
+        # 由 L_sparse 得到 L_sparse_Tensor
         laplacian = laplacian_to_sparse(laplacian)
         laplacians_list.append(laplacian)
     return laplacians_list
 
+
 def laplacian_to_sparse(laplacian):
     """
     :: 功能:
-    :: 输入: 一个 numpy 类型的初始 Laplacian 矩阵
+    :: 输入: 一个 sparse 类型的 Laplacian 矩阵
     :: 输出: 一个 Tensor 类型的 rescale 过的 Laplacian 稀疏张量( L_rescale = L - I )
     :: 用法:
     """
-    laplacian = scipy.sparse.csr_matrix(laplacian)
+    laplacian = csr_matrix(laplacian)
     laplacian = graph_utils.rescale_L(laplacian, lamda_max=2)
     laplacian = laplacian.tocoo()  # 转换为坐标格式矩阵
 

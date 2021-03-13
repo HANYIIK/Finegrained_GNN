@@ -1,7 +1,7 @@
 {
     "load_data": {
 
-      "env": "windows",
+      "platform": "windows",
 
       "dataset_name": "MPED",
       "dataset_size": "small",
@@ -16,6 +16,10 @@
         "linux": {
           "mat": "/media/data/datasets/GNN_DATASETS/",
           "npy": "/media/data/datasets/GNN_NPY_DATASETS/"
+        },
+        "mac": {
+          "mat": "/Users/hanyiik/Downloads/DATASET/GNN_DATASETS/",
+          "npy": "/Users/hanyiik/Downloads/DATASET/GNN_NPY_DATASETS/"
         }
       },
 
