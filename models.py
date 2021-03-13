@@ -23,14 +23,15 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class FineGrainedGNN(nn.Module):
-    """
-    :: 功能:
-    :: 输入:
-    :: 输出:
-    :: 用法:
-    """
     def __init__(self, args, adj):
         super(FineGrainedGNN, self).__init__()
+        """
+        :: 功能: main 网络初始化部分
+        :: 输入: args - 参数
+                adj - 邻接矩阵(稀疏矩阵)
+        :: 输出: 初始化好的一个 FineGrainedGNN 类
+        :: 用法: model = FineGrainedGNN(args, adj_matrix)
+        """
         self.batch_size = args.batch_size
         self.K = args.K
         self.filter_num = args.filter_num
@@ -69,7 +70,14 @@ class FineGrainedGNN(nn.Module):
 
 
     def forward(self, x, y):
-        # --- Expert 1
+        """
+        :: 功能: main 网络执行部分
+        :: 输入: x - (batch_size, 62, 5) 数据
+                y - (batch_size,) 标签
+        :: 输出: (batch_size, 62, 5 * filter_num)
+        :: 用法: logits = model(data, labels)
+        """
+        # ------------ Expert 1
         gc_output_1 = self.gc_expert_1(x)       # (100, 62, 160)
         batch_size, node_num, feature_len = gc_output_1.size()      # 100  62  160
         gc_output_1_re = torch.reshape(gc_output_1, [batch_size, node_num * feature_len])  # (100, 9920)
@@ -79,9 +87,9 @@ class FineGrainedGNN(nn.Module):
             grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=0.3)
             mask_1, nodes_cam_1 = grad_cam(x.detach(), y)
 
-        input_box_1, laplacians_list_2, adjs_2 = get_bbox(x, self.adjs_1, mask_1)
+        input_box_1, laplacians_list_2, adjs_2 = get_bbox(x=x, adjs=self.adjs_1, indices=mask_1)
 
-        # --- Expert 2
+        # ------------ Expert 2
         self.gc_expert_2 = ChebshevGCNN(
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
@@ -98,9 +106,9 @@ class FineGrainedGNN(nn.Module):
             grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_2, fc=self.fc_expert_2, rate=0.3)
             mask_2, nodes_cam_2 = grad_cam(input_box_1.detach(), y)
 
-        input_box_2, laplacians_list_3, adjs_3 = get_bbox(input_box_1, adjs_2, mask_2)
+        input_box_2, laplacians_list_3, adjs_3 = get_bbox(x=input_box_1, adjs=adjs_2, indices=mask_2)
 
-        # --- Expert 3
+        # ------------ Expert 3
         self.gc_expert_3 = ChebshevGCNN(
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
@@ -112,7 +120,7 @@ class FineGrainedGNN(nn.Module):
         gc_output_3_re = torch.reshape(gc_output_3, [batch_size, node_num * feature_len])  # (100, 9920)
         logits_expert_3 = self.fc_expert_3(gc_output_3_re)  # (100, 7)
 
-        # --- Gating Network
+        # ------------ Gating Network
         my_gate = self.gc(x)
         batch_size, node_num, feature_len = my_gate.size()
         my_gate = torch.reshape(my_gate, [batch_size, node_num * feature_len])  # (100, 9920)
@@ -212,31 +220,29 @@ class ChebshevGCNN(nn.Module):
 
 def get_bbox(x, adjs, indices):
     """
-    :: 功能: 为下一个 GNN 产生输入和邻接矩阵集合
-    :: 输入: x -
-            adjs -
-            indices -
-    :: 输出:
-    :: 用法:
+    :: 功能: 为下一个 ChebNet 产生输入和邻接矩阵集合
+    :: 输入: x - 上一个 ChebNet 的输入数据 (batch_size, 62, 5)
+            adjs - 上一个ChebNet 输入数据的邻接矩阵组 [batch_size 个 (62, 62)]
+            indices - grad_cam 选出的 nodes 的索引 (nodes_num,)
+    :: 输出: 下一个 ChebNet 的输入(cuda), 下一个 ChebNet 初始化所用的 laplacians_list, 下一个 get_bbox 所用的 adjs
+    :: 用法: input_box_1, laplacians_list_2, adjs_2 = get_bbox(x, self.adjs_1, mask_1)
     """
-    # x.shape = (100, 62, 5)
-    # gc_output.shape = (100, 32, 62, 5)
-    # layer_weights.shape = (100, 32, 62, 5)
-
     batch_size = len(indices)
 
     input_box = []
     adj_input_box = []
-    adj_input_box_2 = []
+    adj_input_box_sparse = []
 
     for k in range(batch_size):
-        adj_input_box.append(adj_set_zero(adjs[k], indices[k].cpu().numpy()))
-        adj_input_box_2.append(sp.csr_matrix(adj_set_zero(adjs[k], indices[k].cpu().numpy())))
+        new_adj = adj_set_zero(adjs[k], indices[k].cpu().numpy())
+        adj_input_box.append(new_adj)
+        adj_input_box_sparse.append(sp.csr_matrix(new_adj))
+
         tmp = x.cpu().numpy()[k, :, :]
         input_box.append(set_zero(tmp, indices[k].cpu().numpy()))
 
-    input_box = torch.stack(input_box, dim=0)
-    return input_box.cuda(), get_laplacians(adj_input_box_2), adj_input_box
+    input_box = torch.stack(input_box, dim=0).to(DEVICE)
+    return input_box, get_laplacians(adj_input_box_sparse), adj_input_box
 
 # 邻接矩阵置零
 def adj_set_zero(adj_matrix, indices):
@@ -261,7 +267,7 @@ def adj_set_zero(adj_matrix, indices):
 # 矩阵置零
 def set_zero(matrix, indices):
     """
-    :: 功能:
+    :: 功能: 将 matrix 中 indices 指定的行置零
     :: 输入:
     :: 输出:
     :: 用法:
@@ -273,15 +279,15 @@ def set_zero(matrix, indices):
                 input_box[i] = np.copy(matrix[i])
     return torch.from_numpy(input_box)
 
-def get_laplacians(adj_list):
+def get_laplacians(adj_list_sparse):
     """
-    :: 功能:
-    :: 输入:
-    :: 输出:
-    :: 用法:
+    :: 功能: 将一个稀疏邻接矩阵(numpy 类型) list 转换为一个稀疏拉普拉斯 Tensor 的 list
+    :: 输入: 稀疏邻接矩阵(numpy 类型) list
+    :: 输出: 稀疏拉普拉斯 Tensor 的 list
+    :: 用法: get_laplacians(adj_input_box_sparse)
     """
     laplacians_list = []
-    for adj_item in adj_list:
+    for adj_item in adj_list_sparse:
         laplacian = graph_utils.laplacian(adj_item, normalized=True)
         laplacian = laplacian_to_sparse(laplacian)
         laplacians_list.append(laplacian)
