@@ -117,5 +117,6 @@ class Trainer(object):
 
 if __name__ == '__main__':
     my_args = get_config()
-    trainer = Trainer(my_args, people_index=1)
-    trainer.run()
+    for people in range(1, my_args.people_num+1):
+        trainer = Trainer(my_args, people_index=people)
+        trainer.run()
