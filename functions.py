@@ -359,3 +359,8 @@ def get_config():
     arguments = Namespace(**arguments)
 
     return arguments
+
+if __name__ == '__main__':
+    my_args = get_config()
+    create_npy(my_args)
+    test_load_npy_shape(my_args)

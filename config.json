@@ -1,7 +1,7 @@
 {
     "load_data": {
 
-      "platform": "windows",
+      "platform": "mac",
 
       "dataset_name": "MPED",
       "dataset_size": "small",
