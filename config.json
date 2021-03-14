@@ -50,6 +50,9 @@
     "feature_len": 5,
     "node_num": 62,
 
+    "rate_1": 0.3,
+    "rate_2": 0.3,
+
     "GCN": {
       "H_0": 5,
       "H_1": 32,

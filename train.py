@@ -19,6 +19,7 @@ from torch.utils.data import DataLoader
 from models import FineGrainedGNN
 from dataset import EEGDataset
 from functions import get_config
+from utils import train_utils, model_utils
 
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -43,76 +44,76 @@ class Trainer(object):
 
         # 加载模型
         self.model = FineGrainedGNN(self.args, adj=self.adj_matrix).to(DEVICE)
+        self.model.apply(model_utils.weight_init)
+
+        # 加载 Optimizer 与 Loss
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.args.learning_rate)
         self.lr_scheduler = ReduceLROnPlateau(self.optimizer, patience=4, verbose=True)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
 
+        # Accuracy 与 Loss
+        self.mean_accuracy = train_utils.MeanAccuracy(self.args.classes_num)
+        self.mean_loss = train_utils.MeanLoss(self.batch_size)
+
     def train(self):
         self.model.train()
-        total_loss = 0
+        self.mean_loss.reset()
+        desc = "TRAINING - loss: {:.4f}"
+        pbar = tqdm(total=len(self.train_loader), leave=False, desc=desc.format(0))
         for step, (data, labels) in enumerate(self.train_loader):
             data, labels = data.to(DEVICE), labels.to(DEVICE)
             logits, cam_1, cam_2 = self.model(data, labels)
-            loss = self.criterion(logits, labels.long())
+            loss = self.criterion(logits, labels)
+            self.mean_loss.update(loss.cpu().detach().numpy())
             self.optimizer.zero_grad()
             loss.backward()
-            total_loss += loss.item() * self.batch_size
             self.optimizer.step()
-        return total_loss / len(self.train_loader.dataset)
+            pbar.desc = desc.format(loss)
+            pbar.update(1)
+        pbar.close()
+        return self.mean_loss.compute()
 
-    def test(self):
+    def test(self, epoch):
         self.model.eval()
-        correct = 0
-        total_loss = 0
-        for step, (data, labels) in enumerate(self.test_loader):
-            # data = data.to(DEVICE)
-            data, labels = data.to(DEVICE), labels.to(DEVICE)
-            with torch.no_grad():
+        self.mean_accuracy.reset()
+        pbar = tqdm(total=len(self.test_loader), leave=False, desc="TESTING")
+        with torch.no_grad():
+            for step, batch in enumerate(self.test_loader):
+                data, labels = batch[0].to(DEVICE), batch[1]
                 logits, cam_1, cam_2 = self.model(data, None)
-                loss = self.criterion(logits, labels.long())
-                total_loss += loss.item() * self.batch_size
-                pred_y = torch.max(logits, 1)[1].float()
-            correct += torch.sum(labels == pred_y).item()
-        test_acc = correct / len(self.test_loader.dataset)
-        test_loss = total_loss / len(self.test_loader.dataset)
-        return test_loss, test_acc
+                probs = F.softmax(logits, dim=-1).cpu().detach().numpy()
+                labels = labels.numpy()
+                self.mean_accuracy.update(probs, labels)
+                pbar.update(1)
+        pbar.close()
+        acc = self.mean_accuracy.compute()
+        tqdm.write(f"Test Results - Epoch: {epoch} Accuracy: {acc * 100:.2f}%")
+        return acc
 
     def run(self):
-        train_losses = []
-        test_losses = []
-        test_accs = []
-
+        max_acc = 0
         for epoch in range(1, self.args.max_epochs+1):
-            loss = self.train()
-            train_losses.append(loss)
-            test_loss, test_acc = self.test()
-            test_losses.append(test_loss)
-            test_accs.append(test_acc)
-            print(f'Epoch {epoch}, Loss: {loss:.4f}, Test Loss: {test_loss:.4f}, Test Accuracy: {test_acc:.4f}')
+            mloss = self.train()
+            acc = self.test(epoch)
+            if acc > max_acc:
+                max_acc = acc
+                torch.save(self.model.state_dict(), f'{self.people_index}_params.pkl')
+            self.lr_scheduler.step(mloss)
 
-            if epoch % 10 == 0:
-                plt.plot(train_losses)
-                plt.title('Loss vs Epoch')
-                plt.ylabel('Loss')
-                plt.xlabel('Epoch')
-                plt.savefig('loss_vs_epoch')
-                plt.close()
+        # self.model.load_state_dict(state_dict)
+        str_write = f'第 {self.people_index} 个人的 Max Accuracy: {max_acc * 100:.2f}%'
+        print('***********************************' + str_write + '***********************************\n\n\n')
+        self.write_result(str_write)
+        return max_acc
 
-                plt.plot(train_losses, label='Train Loss')
-                plt.plot(test_losses, label='Test Loss')
-                plt.title('Loss vs Epoch')
-                plt.ylabel('Loss')
-                plt.xlabel('Epoch')
-                plt.legend()
-                plt.savefig('train_test_loss_vs_epoch')
-                plt.close()
+    def write_result(self, wtr):
+        file_name = 'k={}、kernel={}、epoch={}.txt'.format(self.args.K, self.args.filter_num, self.args.max_epochs)
+        file_path = './res/'
+        f = open(file_path + file_name, 'a')
+        f.write(wtr)
+        f.write('\n')
+        f.close()
 
-                plt.plot(test_accs)
-                plt.title('Test Accuracy vs Epoch')
-                plt.ylabel('Test Accuracy')
-                plt.xlabel('Epoch')
-                plt.savefig('test_acc_vs_epoch')
-                plt.close()
 
 if __name__ == '__main__':
     my_args = get_config()

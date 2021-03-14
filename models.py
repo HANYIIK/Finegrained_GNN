@@ -18,6 +18,7 @@ from grad_cam import GradCam
 from utils import graph_utils
 from utils import model_utils
 
+
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -37,6 +38,9 @@ class FineGrainedGNN(nn.Module):
         self.feature_num = args.feature_len
         self.classes_num = args.classes_num
         self.node_num = args.node_num
+
+        self.rate_1 = args.rate_1
+        self.rate_2 = args.rate_2
 
         self.adjs_1 = [adj.toarray() for j in range(self.batch_size)]
         laplacian = graph_utils.laplacian(adj, normalized=True)
@@ -83,7 +87,7 @@ class FineGrainedGNN(nn.Module):
         logits_1 = self.fc_expert_1(gc_output_1_re)      # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=0.3)
+            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate_1)
             mask_1, nodes_cam_1 = grad_cam(x.detach(), y)
 
         input_box_1, laplacians_list_2, adjs_2 = get_bbox(x=x, adjs=self.adjs_1, indices=mask_1)
@@ -102,7 +106,7 @@ class FineGrainedGNN(nn.Module):
         logits_expert_2 = self.fc_expert_2(gc_output_2_re)  # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_2, fc=self.fc_expert_2, rate=0.3)
+            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_2, fc=self.fc_expert_2, rate=self.rate_2)
             mask_2, nodes_cam_2 = grad_cam(input_box_1.detach(), y)
 
         input_box_2, laplacians_list_3, adjs_3 = get_bbox(x=input_box_1, adjs=adjs_2, indices=mask_2)
