@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from models import FineGrainedGNN
+from models import FineGrained2GNN
 from dataset import EEGDataset
 from functions import get_config
 from utils import train_utils, model_utils
@@ -43,7 +43,7 @@ class Trainer(object):
         self.test_loader = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False)
 
         # 加载模型
-        self.model = FineGrainedGNN(self.args, adj=self.adj_matrix).to(DEVICE)
+        self.model = FineGrained2GNN(self.args, adj=self.adj_matrix).to(DEVICE)
         self.model.apply(model_utils.weight_init)
 
         # 加载 Optimizer 与 Loss
@@ -55,59 +55,56 @@ class Trainer(object):
         self.mean_accuracy = train_utils.MeanAccuracy(self.args.classes_num)
         self.mean_loss = train_utils.MeanLoss(self.batch_size)
 
-    def train(self):
-        self.model.train()
-        self.mean_loss.reset()
-        desc = "TRAINING - loss: {:.4f}"
-        pbar = tqdm(total=len(self.train_loader), leave=False, desc=desc.format(0))
-        for step, (data, labels) in enumerate(self.train_loader):
-            data, labels = data.to(DEVICE), labels.to(DEVICE)
-            logits, cam_1, cam_2 = self.model(data, labels)
-            loss = self.criterion(logits, labels)
-            self.mean_loss.update(loss.cpu().detach().numpy())
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
-            pbar.desc = desc.format(loss)
-            pbar.update(1)
-        pbar.close()
-        return self.mean_loss.compute()
-
-    def test(self, epoch):
-        self.model.eval()
-        self.mean_accuracy.reset()
-        pbar = tqdm(total=len(self.test_loader), leave=False, desc="TESTING")
-        with torch.no_grad():
-            for step, batch in enumerate(self.test_loader):
-                data, labels = batch[0].to(DEVICE), batch[1]
-                logits, cam_1, cam_2 = self.model(data, None)
-                probs = F.softmax(logits, dim=-1).cpu().detach().numpy()
-                labels = labels.numpy()
-                self.mean_accuracy.update(probs, labels)
-                pbar.update(1)
-        pbar.close()
-        acc = self.mean_accuracy.compute()
-        tqdm.write(f"Test Results - Epoch: {epoch} Accuracy: {acc * 100:.2f}%")
-        return acc
-
     def run(self):
         max_acc = 0
+
         for epoch in range(1, self.args.max_epochs+1):
-            mloss = self.train()
-            acc = self.test(epoch)
-            if acc > max_acc:
-                max_acc = acc
-                torch.save(self.model.state_dict(), f'{self.people_index}_params.pkl')
+            self.mean_loss.reset()
+
+            for step, (data, labels) in enumerate(self.train_loader):
+                self.model.train()
+                data, labels = data.to(DEVICE), labels.to(DEVICE)
+                logits, cam_1 = self.model(data, labels)
+                loss = self.criterion(logits, labels)
+                self.mean_loss.update(loss.cpu().detach().numpy())
+
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+
+                if step % 5 == 0:
+                    acc, confusion = self.test()
+                    print(f'Test Results - Epoch: {epoch} Accuracy: {acc * 100:.2f}%')
+                    if acc > max_acc:
+                        max_acc = acc
+                        np.save(f'./confusion_matrix/{self.people_index}_confusion.npy')
+                        torch.save(self.model.state_dict(), f'./state_dict/{self.people_index}_params.pkl')
+
+            mloss = self.mean_loss.compute()
             self.lr_scheduler.step(mloss)
 
         # self.model.load_state_dict(state_dict)
         str_write = f'第 {self.people_index} 个人的 Max Accuracy: {max_acc * 100:.2f}%'
         print('***********************************' + str_write + '***********************************\n\n\n')
         self.write_result(str_write)
-        return max_acc
+
+
+    def test(self):
+        self.model.eval()
+        self.mean_accuracy.reset()
+        with torch.no_grad():
+            for step, batch in enumerate(self.test_loader):
+                data, labels = batch[0].to(DEVICE), batch[1]
+                logits, cam_1 = self.model(data, None)
+                probs = F.softmax(logits, dim=-1).cpu().detach().numpy()
+                labels = labels.numpy()
+                self.mean_accuracy.update(probs, labels)
+        acc = self.mean_accuracy.compute()
+        confusion = self.mean_accuracy.confusion()
+        return acc, confusion
 
     def write_result(self, wtr):
-        file_name = 'k={}、kernel={}、epoch={}.txt'.format(self.args.K, self.args.filter_num, self.args.max_epochs)
+        file_name = 'k={}、kernel={}、rate={}、epoch={}.txt'.format(self.args.K, self.args.filter_num, self.args.rate_1, self.args.max_epochs)
         file_path = './res/'
         f = open(file_path + file_name, 'a')
         f.write(wtr)

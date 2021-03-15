@@ -21,10 +21,104 @@ from utils import model_utils
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
-class FineGrainedGNN(nn.Module):
+# attention 1 time
+class FineGrained2GNN(nn.Module):
     def __init__(self, args, adj):
-        super(FineGrainedGNN, self).__init__()
+        super(FineGrained2GNN, self).__init__()
+        """
+        :: 功能: main 网络初始化部分
+        :: 输入: args - 参数
+                adj - 邻接矩阵(稀疏矩阵)
+        :: 输出: 初始化好的一个 FineGrainedGNN 类
+        :: 用法: model = FineGrainedGNN(args, adj_matrix)
+        """
+        self.batch_size = args.batch_size
+        self.K = args.K
+        self.filter_num = args.filter_num
+        self.feature_num = args.feature_len
+        self.classes_num = args.classes_num
+        self.node_num = args.node_num
+
+        self.rate_1 = args.rate_1
+        self.rate_2 = args.rate_2
+
+        self.adjs_1 = [adj.toarray() for j in range(self.batch_size)]
+        laplacian = graph_utils.laplacian(adj, normalized=True)
+        laplacian = laplacian_to_sparse(laplacian)
+        self.laplacians_1 = [laplacian for i in range(self.batch_size)]
+
+        # --- Gating Notwork
+        self.gc = ChebshevGCNN(
+            in_channels=self.feature_num,   # 5
+            filter_num=self.filter_num,     # 32
+            K=self.K,                       # 3
+            laplacians=self.laplacians_1
+        )
+        self.fc = nn.Linear(
+            in_features=self.node_num * self.filter_num * self.feature_num,
+            out_features=self.classes_num
+        )
+
+        # --- Expert 1
+        self.gc_expert_1 = copy.deepcopy(self.gc)
+        self.fc_expert_1 = copy.deepcopy(self.fc)
+
+        # --- Expert 2
+        self.gc_expert_2 = copy.deepcopy(self.gc)
+        self.fc_expert_2 = copy.deepcopy(self.fc)
+
+
+    def forward(self, x, y):
+        """
+        :: 功能: main 网络执行部分
+        :: 输入: x - (batch_size, 62, 5) 数据
+                y - (batch_size,) 标签
+        :: 输出: (batch_size, 62, 5 * filter_num)
+        :: 用法: logits = model(data, labels)
+        """
+        # ------------ Expert 1
+        gc_output_1 = self.gc_expert_1(x)       # (100, 62, 160)
+        batch_size, node_num, feature_len = gc_output_1.size()      # 100  62  160
+        gc_output_1_re = torch.reshape(gc_output_1, [batch_size, node_num * feature_len])  # (100, 9920)
+        logits_1 = self.fc_expert_1(gc_output_1_re)      # (100, 7)
+
+        with torch.enable_grad():
+            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate_1)
+            mask, nodes_cam = grad_cam(x.detach(), y)
+
+        input_box, laplacians_2, adjs_2 = get_bbox(x=x, adjs=self.adjs_1, indices=mask)
+
+        # ------------ Expert 2
+        self.gc_expert_2 = ChebshevGCNN(
+            in_channels=self.feature_num,   # 5
+            filter_num=self.filter_num,     # 32
+            K=self.K,    # 3
+            laplacians=laplacians_2
+        ).to(DEVICE)
+
+        gc_output_2 = self.gc_expert_2(input_box)  # (100, 62, 160)
+        batch_size, node_num, feature_len = gc_output_2.size()
+        gc_output_2_re = torch.reshape(gc_output_2, [batch_size, node_num * feature_len])
+        logits_expert_2 = self.fc_expert_2(gc_output_2_re)  # (100, 7)
+
+        # ------------ Gating Network
+        my_gate = self.gc(x)
+        batch_size, node_num, feature_len = my_gate.size()
+        my_gate = torch.reshape(my_gate, [batch_size, node_num * feature_len])  # (100, 9920)
+        my_gate = self.fc(my_gate)
+        pr_gate = F.softmax(my_gate, dim=1)  # (100, 7)
+
+        logits_gate = torch.stack([logits_1, logits_expert_2], dim=-1)  # (100, 7, 2)
+        logits_gate = logits_gate * pr_gate.view(pr_gate.size(0), pr_gate.size(1), 1)
+        logits_gate = logits_gate.sum(-1)
+
+        return logits_gate, nodes_cam
+
+
+# attention 2 times
+class FineGrained3GNN(nn.Module):
+    def __init__(self, args, adj):
+        super(FineGrained3GNN, self).__init__()
         """
         :: 功能: main 网络初始化部分
         :: 输入: args - 参数
