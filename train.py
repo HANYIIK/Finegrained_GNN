@@ -77,7 +77,7 @@ class Trainer(object):
                     print(f'Test Results - Epoch: {epoch} Accuracy: {acc * 100:.2f}%')
                     if acc > max_acc:
                         max_acc = acc
-                        np.save(f'./confusion_matrix/{self.people_index}_confusion.npy')
+                        np.save(f'./confusion_matrix/{self.people_index}_confusion.npy', confusion)
                         torch.save(self.model.state_dict(), f'./state_dict/{self.people_index}_params.pkl')
 
             mloss = self.mean_loss.compute()
