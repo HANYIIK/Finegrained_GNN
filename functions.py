@@ -10,6 +10,7 @@ from argparse import Namespace
 import h5py
 import numpy as np
 import random
+import os
 
 
 def create_npy(args):
@@ -359,6 +360,16 @@ def get_config():
     arguments = Namespace(**arguments)
 
     return arguments
+
+
+def get_folders():
+    path_list = ["./confusion_matrix", "./state_dict", "./res"]
+
+    for path in path_list:
+        folder = os.path.exists(path)
+        if not folder:
+            os.makedirs(path)
+
 
 if __name__ == '__main__':
     my_args = get_config()

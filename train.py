@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader
 
 from models import FineGrained2GNN
 from dataset import EEGDataset
-from functions import get_config
+from functions import get_config, get_folders
 from utils import train_utils, model_utils
 
 
@@ -113,6 +113,7 @@ class Trainer(object):
 
 
 if __name__ == '__main__':
+    get_folders()
     my_args = get_config()
     for people in range(1, my_args.people_num+1):
         trainer = Trainer(my_args, people_index=people)
