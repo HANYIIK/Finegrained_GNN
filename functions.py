@@ -345,7 +345,7 @@ def get_config():
 
     # 读取 Dataset 的配置
     data_cfg = json.load(open('./config.json'))['load_data']
-    path_cfg = data_cfg['txt_path'][data_cfg['platform']]
+    path_cfg = data_cfg['path'][data_cfg['platform']]
     people_cfg = data_cfg['other'][data_cfg['dataset_name']]
     arguments.update(data_cfg)
     arguments.update(path_cfg)
