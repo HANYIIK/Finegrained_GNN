@@ -65,7 +65,7 @@ class Trainer(object):
                 self.model.train()
                 data, labels = data.to(DEVICE), labels.to(DEVICE)
                 logits, cam_1 = self.model(data, labels)
-                loss = self.criterion(logits, labels)
+                loss = self.criterion(logits, labels.long())
                 self.mean_loss.update(loss.cpu().detach().numpy())
 
                 self.optimizer.zero_grad()
@@ -115,6 +115,6 @@ class Trainer(object):
 if __name__ == '__main__':
     get_folders()
     my_args = get_config()
-    for people in range(1, my_args.people_num+1):
+    for people in range(2, my_args.people_num+1):
         trainer = Trainer(my_args, people_index=people)
         trainer.run()
