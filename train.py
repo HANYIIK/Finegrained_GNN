@@ -115,6 +115,6 @@ class Trainer(object):
 if __name__ == '__main__':
     get_folders()
     my_args = get_config()
-    for people in range(2, my_args.people_num+1):
+    for people in range(1, my_args.people_num+1):
         trainer = Trainer(my_args, people_index=people)
         trainer.run()
