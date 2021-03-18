@@ -22,6 +22,7 @@ from utils import model_utils
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # attention 1 time
+# 2 Experts
 class FineGrained2GNN(nn.Module):
     def __init__(self, args, adj):
         super(FineGrained2GNN, self).__init__()
@@ -116,6 +117,7 @@ class FineGrained2GNN(nn.Module):
 
 
 # attention 2 times
+# 3 Experts
 class FineGrained3GNN(nn.Module):
     def __init__(self, args, adj):
         super(FineGrained3GNN, self).__init__()
