@@ -65,5 +65,5 @@ def extract_accs(txt_path):
 
 
 if __name__ == '__main__':
-    update_max_acc(txt_path='../res/k=2、kernel=32、rate=0.4、epoch=100.txt',
+    update_max_acc(txt_path='../res/1.txt',
                    xls_path='../res/result.xlsx')
