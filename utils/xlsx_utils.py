@@ -40,7 +40,7 @@ def replace_xlsx(people_index=1, acc=0.00, xls_path='../res/result.xlsx'):
     max_acc = df['2 Experts'][df['people'] == people_index].values[0]     # numpy 类型的 (1,) 数值, float64
     if acc > max_acc:
         df.loc[df['people']==people_index, '2 Experts'] = acc
-        print(f'更新了第{people_index}个人的数据!')
+        print(f'更新第{people_index}个人的数据为：{acc*100}%')
         df.to_excel(xls_path, engine='openpyxl', sheet_name='Sheet1')
 
 
