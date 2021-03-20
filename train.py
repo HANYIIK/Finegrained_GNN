@@ -104,7 +104,7 @@ class Trainer(object):
         return acc, confusion
 
     def write_result(self, wtr):
-        file_name = 'k={}、kernel={}、rate={}、epoch={}.txt'.format(self.args.K, self.args.filter_num, self.args.rate_1, self.args.max_epochs)
+        file_name = 'rate={}、batch={}.txt'.format(self.args.rate_1, self.batch_size)
         file_path = './res/'
         f = open(file_path + file_name, 'a')
         f.write(wtr)
@@ -115,6 +115,21 @@ class Trainer(object):
 if __name__ == '__main__':
     get_folders()
     my_args = get_config()
-    for people in range(1, my_args.people_num+1):
+
+    bad = [3, 10, 11, 12, 14, 21, 25, 26, 27, 30]
+    middle = [7, 13, 15, 19, 22]
+
+    # ① 暴力全跑
+    # for people in range(1, my_args.people_num+1):
+    #     trainer = Trainer(my_args, people_index=people)
+    #     trainer.run()
+
+    # ② 跑烂
+    for people in bad:
         trainer = Trainer(my_args, people_index=people)
         trainer.run()
+
+    # ③ 跑中等
+    # for people in middle:
+    #     trainer = Trainer(my_args, people_index=people)
+    #     trainer.run()

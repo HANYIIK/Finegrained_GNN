@@ -3,7 +3,7 @@
 
       "platform": "linux",
 
-      "dataset_name": "SEED",
+      "dataset_name": "MPED",
       "dataset_size": "small",
 
       "normalize": 1,
