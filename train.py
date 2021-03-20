@@ -116,8 +116,8 @@ if __name__ == '__main__':
     get_folders()
     my_args = get_config()
 
-    bad = [3, 10, 11, 12, 14, 21, 25, 26, 27, 30]
-    middle = [7, 13, 15, 19, 22]
+    bad = [10, 11, 12, 14, 21, 25, 26, 27, 30]
+    middle = [3, 7, 13, 15, 19, 22]
 
     # ① 暴力全跑
     # for people in range(1, my_args.people_num+1):

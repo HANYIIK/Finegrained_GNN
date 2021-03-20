@@ -16,14 +16,15 @@ def update_max_acc(txt_path, xls_path):
     :: 输入: txt_path - .txt 文件路径
             xls_path - .xlsx 文件路径
     :: 输出: 是否替换
-    :: 用法: update_max_acc(txt_path='../res/k=2、kernel=32、rate=0.5、epoch=100.txt', xls_path='../res/result.xlsx')
+    :: 用法: update_max_acc(txt_path='../res/k=2、kernel=32、rate=0.5、epoch=100.txt',
+                            xls_path='../res/mped_result.xlsx')
     """
     result_list = extract_accs(txt_path)
     for res in result_list:
         replace_xlsx(res[0], res[1], xls_path)
 
 
-def replace_xlsx(people_index=1, acc=0.00, xls_path='../res/result.xlsx'):
+def replace_xlsx(people_index=1, acc=0.00, xls_path='../res/mped_result.xlsx'):
     """
     :: 功能: 判断 acc 是否大于 xlsx 里的 max_acc，如果大于，则更改 xlsx 里对应的 max_acc 为 acc 的值。
     :: 输入: people_index - 第几个人？
@@ -66,4 +67,4 @@ def extract_accs(txt_path):
 
 if __name__ == '__main__':
     update_max_acc(txt_path='../res/1.txt',
-                   xls_path='../res/result.xlsx')
+                   xls_path='../res/mped_result.xlsx')
