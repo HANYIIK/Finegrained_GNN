@@ -32,10 +32,10 @@ class MeanAccuracy(object):
             self._gt_counter[gt_y] += 1
 
     def confusion(self):
-        confusion = []
-        for i in range(self._crt_counter.shape[0]):
-            confusion.append(self._crt_counter[i] / self._gt_counter[i])
-        return np.array(confusion)
+        # confusion = []
+        # for i in range(self._crt_counter.shape[0]):
+        #     confusion.append(self._crt_counter[i] / self._gt_counter[i])
+        return self._crt_counter
 
     def compute(self):
         """

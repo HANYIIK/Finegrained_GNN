@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from models import FineGrained2GNN
 from dataset import EEGDataset
 from functions import get_config, get_folders
-from utils import train_utils, model_utils
+from utils import train_utils, model_utils, xlsx_utils
 
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -34,6 +34,9 @@ class Trainer(object):
         self.batch_size = self.args.batch_size
 
         self.adj_matrix = EEGDataset.build_graph()
+
+        self.max_acc = None
+        self.xls_path = f'./res/{self.args.dataset_name}_result.xlsx'
 
         # 制作 DataLoader
         self.train_dataset = EEGDataset(self.args, istrain=True, people=self.people_index)
@@ -56,7 +59,7 @@ class Trainer(object):
         self.mean_loss = train_utils.MeanLoss(self.batch_size)
 
     def run(self):
-        max_acc = 0
+        self.max_acc = xlsx_utils.get_max_acc_in_xlsx(people_index=self.people_index, xls_path=self.xls_path)
 
         for epoch in range(1, self.args.max_epochs+1):
             self.mean_loss.reset()
@@ -72,22 +75,33 @@ class Trainer(object):
                 loss.backward()
                 self.optimizer.step()
 
-                if step % 5 == 0:
+                if step % 3 == 0:
                     acc, confusion = self.test()
-                    print(f'Test Results - Epoch: {epoch} Accuracy: {acc * 100:.2f}%')
-                    if acc > max_acc:
-                        max_acc = acc
-                        np.save(f'./confusion_matrix/{self.people_index}_confusion.npy', confusion)
-                        torch.save(self.model.state_dict(), f'./state_dict/{self.people_index}_params.pkl')
+                    if acc > self.max_acc:
+                        # 准备改 xlsx 之前，先确认一下 xlsx 里面的 max_acc 是否被其他进程改过
+                        confirm_acc = xlsx_utils.get_max_acc_in_xlsx(people_index=self.people_index, xls_path=self.xls_path)
+
+                        # 被改过了
+                        if confirm_acc > self.max_acc:
+                            # 更新 self.max_acc
+                            self.max_acc = confirm_acc
+                            # 判断现在的 acc 是否大于新 self.max_acc
+                            if acc > self.max_acc:
+                                self.max_acc = acc
+                                xlsx_utils.replace_xlsx_acc(people_index=self.people_index, acc=acc,
+                                                            xls_path=self.xls_path)
+                                np.save(f'./confusion_matrix/{self.people_index}_confusion.npy', confusion)
+                                torch.save(self.model.state_dict(), f'./state_dict/{self.people_index}_params.pkl')
+
+                        # 没有被改过
+                        else:
+                            self.max_acc = acc
+                            xlsx_utils.replace_xlsx_acc(people_index=self.people_index, acc=acc, xls_path=self.xls_path)
+                            np.save(f'./confusion_matrix/{self.people_index}_confusion.npy', confusion)
+                            torch.save(self.model.state_dict(), f'./state_dict/{self.people_index}_params.pkl')
 
             mloss = self.mean_loss.compute()
             self.lr_scheduler.step(mloss)
-
-        # self.model.load_state_dict(state_dict)
-        str_write = f'第 {self.people_index} 个人的 Max Accuracy: {max_acc * 100:.2f}%'
-        print('***********************************' + str_write + '***********************************\n\n\n')
-        self.write_result(str_write)
-
 
     def test(self):
         self.model.eval()
@@ -116,8 +130,9 @@ if __name__ == '__main__':
     get_folders()
     my_args = get_config()
 
-    bad = [10, 11, 12, 14, 21, 25, 26, 27, 30]
-    middle = [3, 7, 13, 15, 19, 22]
+    bad = [11, 12, 14, 26, 27, 30]
+    middle = [3, 7, 13, 15, 19, 21, 22, 25]
+    good = [1, 2, 4, 5, 6, 8, 9, 10, 16, 17, 18, 20, 23, 24, 28, 29]
 
     # ① 暴力全跑
     # for people in range(1, my_args.people_num+1):
