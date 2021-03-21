@@ -134,17 +134,30 @@ if __name__ == '__main__':
     middle = [3, 7, 13, 15, 19, 21, 22, 25]
     good = [1, 2, 4, 5, 6, 8, 9, 10, 16, 17, 18, 20, 23, 24, 28, 29]
 
-    # ① 暴力全跑
-    # for people in range(1, my_args.people_num+1):
-    #     trainer = Trainer(my_args, people_index=people)
-    #     trainer.run()
+    run_select = int(input('选择要跑的人群(1-full, 2-bad, 3-middle, 4-good):'))
+    if run_select == 1:
+        # ① 暴力全跑
+        for people in range(1, my_args.people_num+1):
+            trainer = Trainer(my_args, people_index=people)
+            trainer.run()
 
-    # ② 跑烂
-    for people in bad:
-        trainer = Trainer(my_args, people_index=people)
-        trainer.run()
+    elif run_select == 2:
+        # ② 跑烂
+        for people in bad:
+            trainer = Trainer(my_args, people_index=people)
+            trainer.run()
 
-    # ③ 跑中等
-    # for people in middle:
-    #     trainer = Trainer(my_args, people_index=people)
-    #     trainer.run()
+    elif run_select == 3:
+        # ③ 跑中
+        for people in middle:
+            trainer = Trainer(my_args, people_index=people)
+            trainer.run()
+
+    elif run_select == 4:
+        # ④ 跑好
+        for people in good:
+            trainer = Trainer(my_args, people_index=people)
+            trainer.run()
+
+    else:
+        raise RuntimeError('请做出正确的选择!')
