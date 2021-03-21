@@ -40,8 +40,7 @@ class FineGrained2GNN(nn.Module):
         self.classes_num = args.classes_num
         self.node_num = args.node_num
 
-        self.rate_1 = args.rate_1
-        self.rate_2 = args.rate_2
+        self.rate = args.rate
 
         self.adjs_1 = [adj.toarray() for j in range(self.batch_size)]
         laplacian = graph_utils.laplacian(adj, normalized=True)
@@ -84,7 +83,7 @@ class FineGrained2GNN(nn.Module):
         logits_1 = self.fc_expert_1(gc_output_1_re)      # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate_1)
+            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate)
             mask, nodes_cam = grad_cam(x.detach(), y)
 
         input_box, laplacians_2, adjs_2 = get_bbox(x=x, adjs=self.adjs_1, indices=mask)

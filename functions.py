@@ -340,6 +340,7 @@ def get_config():
     :: 用法:
     """
     parser = argparse.ArgumentParser()
+    parser.add_argument('--rate', type=float, default=0.5, choices=[0.4, 0.5])
     arguments= parser.parse_args()
     arguments = vars(arguments)
 
