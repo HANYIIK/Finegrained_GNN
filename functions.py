@@ -363,8 +363,9 @@ def get_config():
     return arguments
 
 
-def get_folders():
-    path_list = ["./confusion_matrix", "./state_dict", "./res"]
+def get_folders(args):
+    dataset = args.dataset_name
+    path_list = [f"./res/{dataset}/confusion_matrix", f"./res/{dataset}/state_dict", ]
 
     for path in path_list:
         folder = os.path.exists(path)

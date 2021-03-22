@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time     : 2021/3/8 11:50
+# @Time     : 2021/3/21 21:34
 # @Author   : Hanyiik
-# @File     : train.py
-# @Function : 训练模型
+# @File     : write.py
+# @Function :
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -36,9 +36,6 @@ class Trainer(object):
         self.adj_matrix = EEGDataset.build_graph()
 
         self.max_acc = None
-        self.xls_path = f'./res/{self.args.dataset_name}/result.xlsx'
-        self.confu_path = f'./res/{self.args.dataset_name}/confusion_matrix/{self.people_index}_confusion.npy'
-        self.state_dict_path = f'./res/{self.args.dataset_name}/state_dict/{self.people_index}_params.pkl'
 
         # 制作 DataLoader
         self.train_dataset = EEGDataset(self.args, istrain=True, people=self.people_index)
@@ -61,7 +58,7 @@ class Trainer(object):
         self.mean_loss = train_utils.MeanLoss(self.batch_size)
 
     def run(self):
-        self.max_acc = xlsx_utils.get_max_acc_in_xlsx(people_index=self.people_index, xls_path=self.xls_path)
+        self.max_acc = 0
 
         for epoch in range(1, self.args.max_epochs+1):
             self.mean_loss.reset()
@@ -77,33 +74,21 @@ class Trainer(object):
                 loss.backward()
                 self.optimizer.step()
 
-                if step % 3 == 0:
+                if step % 5 == 0:
                     acc, confusion = self.test()
+                    print(f"Test Results - Epoch: {epoch} Accuracy: {acc * 100:.2f}%")
+
                     if acc > self.max_acc:
-                        # 准备改 xlsx 之前，先确认一下 xlsx 里面的 max_acc 是否被其他进程改过
-                        confirm_acc = xlsx_utils.get_max_acc_in_xlsx(people_index=self.people_index, xls_path=self.xls_path)
-
-                        # 被改过了
-                        if confirm_acc > self.max_acc:
-                            # 更新 self.max_acc
-                            self.max_acc = confirm_acc
-                            # 判断现在的 acc 是否大于新 self.max_acc
-                            if acc > self.max_acc:
-                                self.max_acc = acc
-                                xlsx_utils.replace_xlsx_acc(people_index=self.people_index, acc=acc,
-                                                            xls_path=self.xls_path)
-                                np.save(self.confu_path, confusion)
-                                torch.save(self.model.state_dict(), self.state_dict_path)
-
-                        # 没有被改过
-                        else:
-                            self.max_acc = acc
-                            xlsx_utils.replace_xlsx_acc(people_index=self.people_index, acc=acc, xls_path=self.xls_path)
-                            np.save(self.confu_path, confusion)
-                            torch.save(self.model.state_dict(), self.state_dict_path)
+                        self.max_acc = acc
+                        np.save(f'./confusion_matrix/{self.people_index}_confusion.npy', confusion)
+                        torch.save(self.model.state_dict(), f'./state_dict/{self.people_index}_params.pkl')
 
             mloss = self.mean_loss.compute()
             self.lr_scheduler.step(mloss)
+
+        str_write = f'第 {self.people_index} 个人的 Max Accuracy: {self.max_acc * 100:.2f}%'
+        print('***********************************' + str_write + '***********************************\n\n\n')
+        self.write_result(str_write)
 
     def test(self):
         self.model.eval()
@@ -119,10 +104,18 @@ class Trainer(object):
         confusion = self.mean_accuracy.confusion()
         return acc, confusion
 
+    def write_result(self, wtr):
+        file_name = f'rate={self.args.rate}({self.args.time}).txt'
+        file_path = './res/'
+        f = open(file_path + file_name, 'a')
+        f.write(wtr)
+        f.write('\n')
+        f.close()
+
 
 if __name__ == '__main__':
+    get_folders()
     my_args = get_config()
-    get_folders(my_args)
 
     bad = [11, 12, 14, 26, 27, 30]
     middle = [3, 7, 13, 15, 19, 21, 22, 25]

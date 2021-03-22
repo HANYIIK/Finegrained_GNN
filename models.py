@@ -58,6 +58,10 @@ class FineGrained2GNN(nn.Module):
             in_features=self.node_num * self.filter_num * self.feature_num,
             out_features=self.classes_num
         )
+        self.cls = nn.Linear(
+            in_features=self.node_num * self.filter_num * self.feature_num,
+            out_features=2
+        )
 
         # --- Expert 1
         self.gc_expert_1 = copy.deepcopy(self.gc)
@@ -99,17 +103,17 @@ class FineGrained2GNN(nn.Module):
         gc_output_2 = self.gc_expert_2(input_box)  # (100, 62, 160)
         batch_size, node_num, feature_len = gc_output_2.size()
         gc_output_2_re = torch.reshape(gc_output_2, [batch_size, node_num * feature_len])
-        logits_expert_2 = self.fc_expert_2(gc_output_2_re)  # (100, 7)
+        logits_2 = self.fc_expert_2(gc_output_2_re)  # (100, 7)
 
         # ------------ Gating Network
         my_gate = self.gc(x)
         batch_size, node_num, feature_len = my_gate.size()
         my_gate = torch.reshape(my_gate, [batch_size, node_num * feature_len])  # (100, 9920)
-        my_gate = self.fc(my_gate)
-        pr_gate = F.softmax(my_gate, dim=1)  # (100, 7)
+        my_gate = self.cls(my_gate)
+        pr_gate = F.softmax(my_gate, dim=1)  # (100, 2)
 
-        logits_gate = torch.stack([logits_1, logits_expert_2], dim=-1)  # (100, 7, 2)
-        logits_gate = logits_gate * pr_gate.view(pr_gate.size(0), pr_gate.size(1), 1)
+        logits_gate = torch.stack([logits_1, logits_2], dim=-1)  # (100, 7, 2)
+        logits_gate = logits_gate * pr_gate.view(pr_gate.size()[0], 1, pr_gate.size()[1])   # (100, 7, 2) * (100, 1, 2)
         logits_gate = logits_gate.sum(-1)
 
         return logits_gate, nodes_cam
@@ -152,6 +156,10 @@ class FineGrained3GNN(nn.Module):
         self.fc = nn.Linear(
             in_features=self.node_num * self.filter_num * self.feature_num,
             out_features=self.classes_num
+        )
+        self.cls = nn.Linear(
+            in_features=self.node_num * self.filter_num * self.feature_num,
+            out_features=3
         )
 
         # --- Expert 1
@@ -198,7 +206,7 @@ class FineGrained3GNN(nn.Module):
         gc_output_2 = self.gc_expert_2(input_box_1)  # (100, 62, 160)
         batch_size, node_num, feature_len = gc_output_2.size()
         gc_output_2_re = torch.reshape(gc_output_2, [batch_size, node_num * feature_len])
-        logits_expert_2 = self.fc_expert_2(gc_output_2_re)  # (100, 7)
+        logits_2 = self.fc_expert_2(gc_output_2_re)  # (100, 7)
 
         with torch.enable_grad():
             grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_2, fc=self.fc_expert_2, rate=self.rate_2)
@@ -216,7 +224,7 @@ class FineGrained3GNN(nn.Module):
         gc_output_3 = self.gc_expert_3(input_box_2)  # (100, 62, 160)
         batch_size, node_num, feature_len = gc_output_3.size()
         gc_output_3_re = torch.reshape(gc_output_3, [batch_size, node_num * feature_len])  # (100, 9920)
-        logits_expert_3 = self.fc_expert_3(gc_output_3_re)  # (100, 7)
+        logits_3 = self.fc_expert_3(gc_output_3_re)  # (100, 7)
 
         # ------------ Gating Network
         my_gate = self.gc(x)
@@ -225,8 +233,8 @@ class FineGrained3GNN(nn.Module):
         my_gate = self.fc(my_gate)
         pr_gate = F.softmax(my_gate, dim=1)  # (100, 7)
 
-        logits_gate = torch.stack([logits_1, logits_expert_2, logits_expert_3], dim=-1)  # (100, 7, 3)
-        logits_gate = logits_gate * pr_gate.view(pr_gate.size(0), pr_gate.size(1), 1)
+        logits_gate = torch.stack([logits_1, logits_2, logits_3], dim=-1)  # (100, 7, 3)
+        logits_gate = logits_gate * pr_gate.view(pr_gate.size()[0], 1, pr_gate.size()[1])
         logits_gate = logits_gate.sum(-1)
 
         return logits_gate, nodes_cam_1, nodes_cam_2
@@ -248,7 +256,7 @@ class ChebshevGCNN(nn.Module):
     def __init__(self, in_channels, filter_num, K, laplacians):
         super(ChebshevGCNN, self).__init__()
         self.weight = nn.Parameter(torch.Tensor(K + 1, filter_num))     # in_channels = 5
-        self.bias = nn.Parameter(torch.Tensor(1, 1, filter_num * in_channels))
+        self.bias = nn.Parameter(torch.Tensor(1, 1, filter_num * in_channels))  # (1, 1, 160)
         self.K = K
         self.filter_num = filter_num
         self.laplacians = laplacians

@@ -22,10 +22,7 @@
           "npy": "/Users/hanyiik/Downloads/DATASET/GNN_NPY_DATASETS/"
         },
 
-        "chen": {
-          "mat": "/home/chen/下载/HYK/数据集/DATASET/",
-          "npy": "/home/chen/下载/HYK/数据集/DATASET/GNN_NPY_DATASETS/"
-        },
+
 
         "liyang": {
           "mat": "/media/data/liyang/data/",

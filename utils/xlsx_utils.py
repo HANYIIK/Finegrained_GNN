@@ -19,7 +19,7 @@ def update_max_acc(txt_path, xls_path):
             xls_path - .xlsx 文件路径
     :: 输出: 是否替换
     :: 用法: update_max_acc(txt_path='../res/k=2、kernel=32、rate=0.5、epoch=100.txt',
-                            xls_path='../res/MPED_result.xlsx')
+                            xls_path='../res/result.xlsx')
     """
     result_list = extract_accs(txt_path)
     for res in result_list:
@@ -74,7 +74,7 @@ def get_max_acc_in_xlsx(people_index, xls_path):
     :: 输入: people_index - 第几个人?
             xls_path - .xlsx文件路径
     :: 输出: 第 people_index 个人的 max_acc (numpy 类型的 (1,) 数值, float64)
-    :: 用法: max_acc = get_max_acc_in_xlsx(people_index=1, xls_path='../res/MPED_result.xlsx')
+    :: 用法: max_acc = get_max_acc_in_xlsx(people_index=1, xls_path='../res/result.xlsx')
     """
     df = pd.read_excel(xls_path, engine='openpyxl',
                        sheet_name='Sheet1', usecols=['people', EXPERTS],
@@ -105,4 +105,4 @@ def replace_xlsx_acc(people_index, acc, xls_path):
 
 if __name__ == '__main__':
     update_max_acc(txt_path='../res/1.txt',
-                   xls_path='../res/SEED_result.xlsx')
+                   xls_path='../res/MPED/result.xlsx')
