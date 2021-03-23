@@ -48,7 +48,7 @@ class FineGrained2GNN(nn.Module):
         self.laplacians_1 = [laplacian for _ in range(self.batch_size)]
 
         # --- Gating Notwork
-        self.gc = ChebshevGCNN(
+        self.gc = ChebshevGNN(
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
             K=self.K,                       # 3
@@ -321,6 +321,108 @@ class ChebshevGCNN(nn.Module):
 
     def forward(self, x):
         x = self.chebyshev(x)
+        x = self.brelu(x)
+        return x
+
+
+class ChebshevGNN(nn.Module):
+    """
+    :: 功能: 契比雪夫图卷积网络
+    :: 输入: in_channels - 输入节点的特征长度
+            filter_num - 需要几个卷积核
+            K - 看距离本节点多少条边的邻居
+            laplacians - 一个 batch 图的拉普拉斯矩阵 list
+    :: 输出: (batch_size, node_num, feature_len * kernel_num)
+    :: 用法: self.gc = ChebshevGCNN(in_channels=self.feature_len,
+                                    filter_num=self.filter_num,
+                                    K=self.K,
+                                    laplacians=laplacians)
+    """
+
+    def __init__(self, in_channels, filter_num, K, laplacians):
+        super(ChebshevGNN, self).__init__()
+        self.weight = nn.Parameter(torch.Tensor(filter_num, K + 1, in_channels))  # in_channels = 5
+        self.bias = nn.Parameter(torch.Tensor(1, 1, filter_num * in_channels))  # (1, 1, 160)
+        self.K = K
+        self.filter_num = filter_num
+        self.laplacians = laplacians
+
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        """
+        :: 功能: 把 weight 和 bias 重置一下
+        """
+        model_utils.truncated_normal_(self.weight, mean=0.0, std=0.1)
+        model_utils.truncated_normal_(self.bias, mean=0.0, std=0.1)
+
+    def chebconv(self, x):
+        """
+        :: 功能: 契比雪夫多项式卷积部分
+        :: 输入: (batch_size, node_num, feature_len)类型的 Tensor
+        :: 输出: (batch_size, node_num, feature_len * kernel_num)类型的 Tensor
+        :: 用法: h1 = chebyshev(x)
+        """
+        batch_size, node_num, feature_len = x.size()  # (100, 62, 5)
+
+        x_split = []
+        for i, a_graph in enumerate(x):  # a_graph.shape = (62, 5)
+            '''
+            切比雪夫多项式:
+                x0 = x
+                x1 = L × x
+                x2 = 2 × L × x1 - x0
+                    ...
+                x(k) = 2 × L × x(k-1) - x(k-2)
+            '''
+            x0 = a_graph
+            x_list = [x0]
+            x1 = torch.sparse.mm(self.laplacians[i].to(DEVICE), x0)  # (62, 5)
+            x_list.append(x1)
+            if self.K > 1:
+                for k in range(2, self.K + 1):
+                    x2 = 2 * torch.sparse.mm(self.laplacians[i].to(DEVICE), x1) - x0  # (62, 5)
+                    x_list.append(x2)
+                    x0, x1 = x1, x2
+
+            # [x0, x1, x2, ..., xK] 横着拼接起来
+            # (K+1, 62, 5)
+            a_graph = torch.stack(x_list, dim=0).permute(1, 0, 2)  # (62, K+1, 5)
+            x_split.append(a_graph)
+
+        x = torch.stack(x_split, dim=0)  # (100, 62, K+1, 5)
+
+        out_list = []
+        for graphs in x:
+            out_list.append(self.my_conv(graphs, self.weight))
+        x = torch.stack(out_list, dim=0)
+
+        return x  # (100, 62, 160)
+
+    @staticmethod
+    def my_conv(x, weight):
+        """
+        :: 功能: 实现 ChebNet 的卷积过程
+        :: 输入: x - (node_num, K+1, feature_len) 类似于 [x_0, x_1, ..., x_K]
+                weight - (kernel_num, K+1, feature_len)
+        :: 输出: out - (node_num, feature_len * kernel_num)
+        :: 用法:
+        """
+        final = []
+        for kernel in weight:
+            a_kernel = []
+            for x_node in x:
+                a_kernel.append(x_node * kernel)
+            final.append(torch.sum(torch.stack(a_kernel, dim=0), dim=1))
+        out = torch.hstack(final)
+        return out
+
+    def brelu(self, x):
+        """Bias and ReLU. One bias per filter."""
+        return F.relu(x + self.bias)
+
+    def forward(self, x):
+        x = self.chebconv(x)
         x = self.brelu(x)
         return x
 
