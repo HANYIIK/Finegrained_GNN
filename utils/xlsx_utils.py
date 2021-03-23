@@ -104,5 +104,5 @@ def replace_xlsx_acc(people_index, acc, xls_path):
 
 
 if __name__ == '__main__':
-    update_max_acc(txt_path='../res/1.txt',
+    update_max_acc(txt_path='../res/MPED/1.txt',
                    xls_path='../res/MPED/result.xlsx')

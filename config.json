@@ -1,9 +1,9 @@
 {
     "load_data": {
 
-      "platform": "linux",
+      "platform": "windows",
 
-      "dataset_name": "MPED",
+      "dataset_name": "SEED",
       "dataset_size": "small",
 
       "normalize": 1,
@@ -22,10 +22,7 @@
           "npy": "/Users/hanyiik/Downloads/DATASET/GNN_NPY_DATASETS/"
         },
 
-        "chen": {
-          "mat": "/home/chen/下载/HYK/数据集/DATASET/",
-          "npy": "/home/chen/下载/HYK/数据集/DATASET/GNN_NPY_DATASETS/"
-        },
+
 
         "liyang": {
           "mat": "/media/data/liyang/data/",

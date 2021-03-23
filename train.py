@@ -79,7 +79,7 @@ class Trainer(object):
 
                 if step % 3 == 0:
                     acc, confusion = self.test()
-                    if acc > self.max_acc:
+                    if acc >= self.max_acc:
                         # 准备改 xlsx 之前，先确认一下 xlsx 里面的 max_acc 是否被其他进程改过
                         confirm_acc = xlsx_utils.get_max_acc_in_xlsx(people_index=self.people_index, xls_path=self.xls_path)
 

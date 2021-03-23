@@ -42,10 +42,10 @@ class FineGrained2GNN(nn.Module):
 
         self.rate = args.rate
 
-        self.adjs_1 = [adj.toarray() for j in range(self.batch_size)]
+        self.adjs_1 = [adj.toarray() for _ in range(self.batch_size)]
         laplacian = graph_utils.laplacian(adj, normalized=True)
         laplacian = laplacian_to_sparse(laplacian)
-        self.laplacians_1 = [laplacian for i in range(self.batch_size)]
+        self.laplacians_1 = [laplacian for _ in range(self.batch_size)]
 
         # --- Gating Notwork
         self.gc = ChebshevGCNN(
@@ -141,10 +141,10 @@ class FineGrained3GNN(nn.Module):
         self.rate_1 = args.rate_1
         self.rate_2 = args.rate_2
 
-        self.adjs_1 = [adj.toarray() for j in range(self.batch_size)]
+        self.adjs_1 = [adj.toarray() for _ in range(self.batch_size)]
         laplacian = graph_utils.laplacian(adj, normalized=True)
         laplacian = laplacian_to_sparse(laplacian)
-        self.laplacians_1 = [laplacian for i in range(self.batch_size)]
+        self.laplacians_1 = [laplacian for _ in range(self.batch_size)]
 
         # --- Gating Notwork
         self.gc = ChebshevGCNN(
