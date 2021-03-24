@@ -3,7 +3,7 @@
 # @Time     : 2021/3/21 21:34
 # @Author   : Hanyiik
 # @File     : write.py
-# @Function :
+# @Function : 第一次跑得到结果
 import random
 import numpy as np
 import matplotlib.pyplot as plt
