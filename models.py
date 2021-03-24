@@ -48,7 +48,7 @@ class FineGrained2GNN(nn.Module):
         self.laplacians_1 = [laplacian for _ in range(self.batch_size)]
 
         # --- Gating Notwork
-        self.gc = ChebshevGNN(
+        self.gc = ChebshevGCNN(
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
             K=self.K,                       # 3
@@ -230,8 +230,8 @@ class FineGrained3GNN(nn.Module):
         my_gate = self.gc(x)
         batch_size, node_num, feature_len = my_gate.size()
         my_gate = torch.reshape(my_gate, [batch_size, node_num * feature_len])  # (100, 9920)
-        my_gate = self.fc(my_gate)
-        pr_gate = F.softmax(my_gate, dim=1)  # (100, 7)
+        my_gate = self.cls(my_gate)
+        pr_gate = F.softmax(my_gate, dim=1)  # (100, 3)
 
         logits_gate = torch.stack([logits_1, logits_2, logits_3], dim=-1)  # (100, 7, 3)
         logits_gate = logits_gate * pr_gate.view(pr_gate.size()[0], 1, pr_gate.size()[1])
@@ -240,6 +240,7 @@ class FineGrained3GNN(nn.Module):
         return logits_gate, nodes_cam_1, nodes_cam_2
 
 
+# version 1
 class ChebshevGCNN(nn.Module):
     """
     :: 功能: 契比雪夫图卷积网络
@@ -325,26 +326,27 @@ class ChebshevGCNN(nn.Module):
         return x
 
 
+# version 2
 class ChebshevGNN(nn.Module):
     """
     :: 功能: 契比雪夫图卷积网络
     :: 输入: in_channels - 输入节点的特征长度
-            filter_num - 需要几个卷积核
-            K - 看距离本节点多少条边的邻居
+            out_channels - 需要几个卷积核
+            poly_degree - 看距离本节点多少条边的邻居
             laplacians - 一个 batch 图的拉普拉斯矩阵 list
-    :: 输出: (batch_size, node_num, feature_len * kernel_num)
+    :: 输出: (batch_size, node_num, feature_len * out_channels)
     :: 用法: self.gc = ChebshevGCNN(in_channels=self.feature_len,
-                                    filter_num=self.filter_num,
-                                    K=self.K,
+                                    out_channels=self.out_channels,
+                                    poly_degree=self.poly_degree,
                                     laplacians=laplacians)
     """
 
-    def __init__(self, in_channels, filter_num, K, laplacians):
+    def __init__(self, in_channels, out_channels, K, laplacians):
         super(ChebshevGNN, self).__init__()
-        self.weight = nn.Parameter(torch.Tensor(filter_num, K + 1, in_channels))  # in_channels = 5
-        self.bias = nn.Parameter(torch.Tensor(1, 1, filter_num * in_channels))  # (1, 1, 160)
+        self.weight = nn.Parameter(torch.Tensor(K + 1, in_channels, out_channels))  # (K+1, 5, 32)
+        self.bias = nn.Parameter(torch.Tensor(1, 1, out_channels))  # (1, 1, 32)
         self.K = K
-        self.filter_num = filter_num
+        self.out_channels = out_channels
         self.laplacians = laplacians
 
         self.reset_parameters()
@@ -360,7 +362,7 @@ class ChebshevGNN(nn.Module):
         """
         :: 功能: 契比雪夫多项式卷积部分
         :: 输入: (batch_size, node_num, feature_len)类型的 Tensor
-        :: 输出: (batch_size, node_num, feature_len * kernel_num)类型的 Tensor
+        :: 输出: (batch_size, node_num, feature_len * out_channels)类型的 Tensor
         :: 用法: h1 = chebyshev(x)
         """
         batch_size, node_num, feature_len = x.size()  # (100, 62, 5)
@@ -386,35 +388,27 @@ class ChebshevGNN(nn.Module):
                     x0, x1 = x1, x2
 
             # [x0, x1, x2, ..., xK] 横着拼接起来
-            # (K+1, 62, 5)
-            a_graph = torch.stack(x_list, dim=0).permute(1, 0, 2)  # (62, K+1, 5)
+            # (poly_degree+1, 62, 5)
+            a_graph = torch.stack(x_list, dim=0).permute(1, 0, 2)  # (62, poly_degree+1, 5)
             x_split.append(a_graph)
 
-        x = torch.stack(x_split, dim=0)  # (100, 62, K+1, 5)
+        x = torch.stack(x_split, dim=0)  # (100, 62, poly_degree+1, 5)
+        x = torch.reshape(x, (self.K+1, batch_size * node_num, feature_len))
 
-        out_list = []
-        for graphs in x:
-            out_list.append(self.my_conv(graphs, self.weight))
-        x = torch.stack(out_list, dim=0)
+        x = self.my_conv(x, self.weight, self.K, node_num, self.out_channels, batch_size)
+        x = torch.reshape(x, (batch_size, node_num, self.out_channels))
 
-        return x  # (100, 62, 160)
+        return x  # (100, 62, 32)
 
     @staticmethod
-    def my_conv(x, weight):
+    def my_conv(x, weight, poly_degree, node_num, out_channels, batch_size):
         """
-        :: 功能: 实现 ChebNet 的卷积过程
-        :: 输入: x - (node_num, K+1, feature_len) 类似于 [x_0, x_1, ..., x_K]
-                weight - (kernel_num, K+1, feature_len)
-        :: 输出: out - (node_num, feature_len * kernel_num)
-        :: 用法:
+        :: x.shape = (poly_degree+1, node_num, in_channels)
+        :: weight.shape = (poly_degree+1, in_channels, out_channels)
         """
-        final = []
-        for kernel in weight:
-            a_kernel = []
-            for x_node in x:
-                a_kernel.append(x_node * kernel)
-            final.append(torch.sum(torch.stack(a_kernel, dim=0), dim=1))
-        out = torch.hstack(final)
+        out = torch.zeros((node_num * batch_size, out_channels)).to(DEVICE)
+        for k in range(poly_degree + 1):
+            out += torch.matmul(x[k], weight[k])
         return out
 
     def brelu(self, x):
@@ -473,7 +467,7 @@ def adj_set_zero(adj_matrix, indices):
                 input_box_2[:, j] = np.copy(input_box[:, j])
     return torch.from_numpy(input_box_2)
 
-# 矩阵置零
+# Input 矩阵置零
 def set_zero(matrix, indices):
     """
     :: 功能: 把 matrix 按照 indices 中指定的'行'置零

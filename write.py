@@ -37,6 +37,10 @@ class Trainer(object):
 
         self.max_acc = None
 
+        self.confu_path = f'./res/{self.args.dataset_name}/confusion_matrix/{self.people_index}_confusion.npy'
+        self.state_dict_path = f'./res/{self.args.dataset_name}/state_dict/{self.people_index}_params.pkl'
+        self.txt_path = f'./res/{self.args.dataset_name}/'
+
         # 制作 DataLoader
         self.train_dataset = EEGDataset(self.args, istrain=True, people=self.people_index)
         self.test_dataset = EEGDataset(self.args, istrain=False, people=self.people_index)
@@ -80,8 +84,8 @@ class Trainer(object):
 
                     if acc > self.max_acc:
                         self.max_acc = acc
-                        np.save(f'./confusion_matrix/{self.people_index}_confusion.npy', confusion)
-                        torch.save(self.model.state_dict(), f'./state_dict/{self.people_index}_params.pkl')
+                        np.save(self.confu_path, confusion)
+                        torch.save(self.model.state_dict(), self.state_dict_path)
 
             mloss = self.mean_loss.compute()
             self.lr_scheduler.step(mloss)
@@ -106,16 +110,15 @@ class Trainer(object):
 
     def write_result(self, wtr):
         file_name = f'rate={self.args.rate}({self.args.time}).txt'
-        file_path = './res/'
-        f = open(file_path + file_name, 'a')
+        f = open(self.txt_path + file_name, 'a')
         f.write(wtr)
         f.write('\n')
         f.close()
 
 
 if __name__ == '__main__':
-    get_folders()
     my_args = get_config()
+    get_folders(my_args)
 
     bad = [11, 12, 14, 26, 27, 30]
     middle = [3, 7, 13, 15, 19, 21, 22, 25]
