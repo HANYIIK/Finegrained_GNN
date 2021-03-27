@@ -301,15 +301,17 @@ class ChebshevGCNN(nn.Module):
                     x0, x1 = x1, x2
 
             # [x0, x1, x2, ..., xK] 横着拼接起来
-            a_graph = torch.stack(x_list, dim=0).permute(1, 2, 0)  # (62, 5, K+1=4)
+            a_graph = torch.stack(x_list, dim=0).permute(1, 2, 0)  # (62, 5, K+1=3)
             x_split.append(a_graph)
 
-        x = torch.stack(x_split, dim=0)     # (100, 62, 5, K+1=4)
-        x = torch.reshape(x, [batch_size * node_num * feature_len, self.K+1])   # (31000, K+1=4)
+        x = torch.stack(x_split, dim=0)     # (100, 62, 5, K+1=3)
+        x = torch.reshape(x, [batch_size * node_num * feature_len, self.K+1])   # (31000, K+1=3)
 
         '''
             x.shape = (batch_size * node_num * feature_len, K+1=4)
             weight.shape = (K+1=4, 卷积核个数)
+            a0 * x0 + a1 * x1 + a2 * x2
+            [a0, a1, a2] 32个
         '''
         x = torch.matmul(x, self.weight)  # (31000, 卷积核个数)
         x = torch.reshape(x, [batch_size, node_num, feature_len, self.filter_num])  # (100, 62, 5, 32)
@@ -332,7 +334,7 @@ class ChebshevGNN(nn.Module):
     :: 功能: 契比雪夫图卷积网络
     :: 输入: in_channels - 输入节点的特征长度
             out_channels - 需要几个卷积核
-            poly_degree - 看距离本节点多少条边的邻居
+            K - 看距离本节点多少条边的邻居
             laplacians - 一个 batch 图的拉普拉斯矩阵 list
     :: 输出: (batch_size, node_num, feature_len * out_channels)
     :: 用法: self.gc = ChebshevGCNN(in_channels=self.feature_len,
@@ -401,13 +403,13 @@ class ChebshevGNN(nn.Module):
         return x  # (100, 62, 32)
 
     @staticmethod
-    def my_conv(x, weight, poly_degree, node_num, out_channels, batch_size):
+    def my_conv(x, weight, K, node_num, out_channels, batch_size):
         """
         :: x.shape = (poly_degree+1, node_num, in_channels)
         :: weight.shape = (poly_degree+1, in_channels, out_channels)
         """
         out = torch.zeros((node_num * batch_size, out_channels)).to(DEVICE)
-        for k in range(poly_degree + 1):
+        for k in range(K + 1):
             out += torch.matmul(x[k], weight[k])
         return out
 
