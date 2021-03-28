@@ -8,13 +8,32 @@ import numpy as np
 import pandas as pd
 import sys
 import pdb
+import os
 
 
+# 更新哪个数据集
+DATASET_NAME = 'MPED'
+
+# 跑的 model 的版本
 EXPERTS = '2 Experts'
-TXT_PATH='../res/MPED/1.txt'
-XLS_PATH='../res/MPED/result.xlsx'
 
-def update_max_acc(txt_path, xls_path):
+# txt 文件路径
+TXT_PATH=f'../res/{DATASET_NAME}/1.txt'
+
+# xls 文件路径
+XLS_PATH=f'../res/{DATASET_NAME}/result.xlsx'
+
+# 李阳服务器跑的 xls 文件路径
+UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/liyang_res/{DATASET_NAME}/result.xlsx'
+
+# 韩一轲服务器跑的 xls 文件路径
+FINAL_XLS_PATH = f'/Users/hanyiik/Desktop/final_res/{DATASET_NAME}/result.xlsx'
+
+# 李阳服务器跑的 state_dict 文件路径
+STATE_DICT_PATH = f'/Users/hanyiik/Desktop/liyang_res/{DATASET_NAME}/state_dict/'
+
+
+def use_txt_update_xlsx(txt_path, xls_path):
     """
     :: 功能: 用 txt 文件里的大 acc 替换 xlsx 文件里的小 acc
     :: 输入: txt_path - .txt 文件路径
@@ -23,7 +42,7 @@ def update_max_acc(txt_path, xls_path):
     :: 用法: update_max_acc(txt_path='../res/k=2、kernel=32、rate=0.5、epoch=100.txt',
                             xls_path='../res/result.xlsx')
     """
-    result_list = extract_accs(txt_path)
+    result_list = extract_txt_accs(txt_path)
     for res in result_list:
         replace_xlsx(res[0], res[1], xls_path)
 
@@ -49,7 +68,7 @@ def replace_xlsx(people_index, acc, xls_path):
         df.to_excel(xls_path, engine='openpyxl', sheet_name='Sheet1')
 
 
-def extract_accs(txt_path):
+def extract_txt_accs(txt_path):
     """
     :: 功能: 得到 .txt 文件里的 people_index 与 对应的 acc
     :: 输入: txt_path - .txt 文件路径
@@ -105,6 +124,38 @@ def replace_xlsx_acc(people_index, acc, xls_path):
     df.to_excel(xls_path, engine='openpyxl', sheet_name='Sheet1')
 
 
+def use_xlsx_update_xlsx(final_xls_path, update_xls_path, state_dict_path):
+    """
+    :: 功能: 两个 xlsx 文件取最大，保持 final_xls_path 文件的结果最大
+    :: 输入: final_xls_path - 最终结果 xlsx
+            update_xls_path - 用于更新 final_xls_path 的 xlsx
+    :: 输出: final_xls_path 文件中没有被改动人组成的 list
+    :: 用法: nochange_people = use_xlsx_update_xlsx(final_xls_path=FINAL_XLS_PATH, update_xls_path=UPDATE_XLS_PATH)
+    """
+    # 先得到 update_xls_path 中被改过的人
+    changed_people_list = get_changed_people(state_dict_path)
+    nochange = []
+    for changed_people in changed_people_list:
+        # 先得到各自的 max_acc
+        update_acc = get_max_acc_in_xlsx(people_index=changed_people, xls_path=update_xls_path)
+        final_acc = get_max_acc_in_xlsx(people_index=changed_people, xls_path=final_xls_path)
+        # 如果 update_acc 更大, 则替换 final_xls_path 中的 xlsx 文件中对应人的数值
+        if update_acc > final_acc:
+            replace_xlsx_acc(people_index=changed_people, acc=update_acc, xls_path=final_xls_path)
+        else:
+            nochange.append(changed_people)
+    return nochange
+
+def get_changed_people(state_dict_path):
+    num_list = []
+    for file_name in os.listdir(state_dict_path):
+        if '_params.pkl' in file_name:
+            num = int(file_name.split('_params.pkl')[0])
+            num_list.append(num)
+    num_list = sorted(num_list)
+    return num_list
+
+
 if __name__ == '__main__':
-    update_max_acc(txt_path=TXT_PATH,
-                   xls_path=XLS_PATH)
+    nochange_people = use_xlsx_update_xlsx(final_xls_path=FINAL_XLS_PATH, update_xls_path=UPDATE_XLS_PATH, state_dict_path=STATE_DICT_PATH)
+    print(nochange_people)
