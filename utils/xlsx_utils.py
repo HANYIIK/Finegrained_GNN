@@ -147,6 +147,12 @@ def use_xlsx_update_xlsx(final_xls_path, update_xls_path, state_dict_path):
     return nochange
 
 def get_changed_people(state_dict_path):
+    """
+    :: 功能: 从 state_dict 文件夹得到被改的人有哪些？
+    :: 输入: state_dict_path - state_dict 文件路径
+    :: 输出: 被改过人(int)组成的 list
+    :: 用法: changed_people_list = get_changed_people(state_dict_path)
+    """
     num_list = []
     for file_name in os.listdir(state_dict_path):
         if '_params.pkl' in file_name:
