@@ -124,9 +124,18 @@ if __name__ == '__main__':
     my_args = get_config()
     get_folders(my_args)
 
-    bad = [11, 12, 14, 26, 27, 30]
-    middle = [3, 7, 13, 15, 19, 21, 22, 25]
-    good = [1, 2, 4, 5, 6, 8, 9, 10, 16, 17, 18, 20, 23, 24, 28, 29]
+    if my_args.dataset_name == 'MPED':
+        bad = [10, 11, 12, 13, 14, 21, 25, 26, 27, 30]
+        middle = [2, 7, 8, 15, 16]
+        good = [1, 3, 4, 5, 6, 9, 10, 17, 18, 19, 20, 22, 23, 24, 28, 29]
+
+    elif my_args.dataset_name == 'SEED':
+        bad = [3, 8, 11, 12, 13, 14, 15, 17, 18, 21, 28, 29, 31, 34, 35, 39, 42]
+        middle = [5, 37]
+        good = [1, 2, 4, 7, 9, 10, 16, 19, 20, 22, 23, 24, 25, 26, 27, 30, 32, 33, 36, 38, 40, 41, 43, 44, 45]
+
+    else:
+        raise RuntimeError('请选择正确的数据集!')
 
     run_select = int(input('选择要跑的人群(1-full, 2-bad, 3-middle, 4-good):'))
     if run_select == 1:
