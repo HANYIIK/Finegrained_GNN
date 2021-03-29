@@ -1,7 +1,7 @@
 {
     "load_data": {
 
-      "platform": "windows",
+      "platform": "linux",
 
       "dataset_name": "SEED",
       "dataset_size": "small",

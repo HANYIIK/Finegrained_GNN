@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from models import FineGrained2GNN
+from models import FineGrained2GNN, FineGrained3GNN
 from dataset import EEGDataset
 from functions import get_config, get_folders
 from utils import train_utils, model_utils, xlsx_utils
@@ -49,7 +49,7 @@ class Trainer(object):
         self.test_loader = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False)
 
         # 加载模型
-        self.model = FineGrained2GNN(self.args, adj=self.adj_matrix).to(DEVICE)
+        self.model = FineGrained3GNN(self.args, adj=self.adj_matrix).to(DEVICE)
         self.model.apply(model_utils.weight_init)
 
         # 加载 Optimizer 与 Loss
@@ -70,7 +70,7 @@ class Trainer(object):
             for step, (data, labels) in enumerate(self.train_loader):
                 self.model.train()
                 data, labels = data.to(DEVICE), labels.to(DEVICE)
-                logits, cam_1 = self.model(data, labels)
+                logits, cam_1, cam_2 = self.model(data, labels)
                 loss = self.criterion(logits, labels.long())
                 self.mean_loss.update(loss.cpu().detach().numpy())
 
@@ -100,7 +100,7 @@ class Trainer(object):
         with torch.no_grad():
             for step, batch in enumerate(self.test_loader):
                 data, labels = batch[0].to(DEVICE), batch[1]
-                logits, cam_1 = self.model(data, None)
+                logits, cam_1, cam_2 = self.model(data, None)
                 probs = F.softmax(logits, dim=-1).cpu().detach().numpy()
                 labels = labels.numpy()
                 self.mean_accuracy.update(probs, labels)
@@ -109,7 +109,7 @@ class Trainer(object):
         return acc, confusion
 
     def write_result(self, wtr):
-        file_name = f'rate={self.args.rate}({self.args.time}).txt'
+        file_name = f'rate_1={self.args.rate_1}、rate_2={self.args.rate_2}.txt'
         f = open(self.txt_path + file_name, 'a')
         f.write(wtr)
         f.write('\n')

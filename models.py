@@ -52,7 +52,8 @@ class FineGrained2GNN(nn.Module):
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
             K=self.K,                       # 3
-            laplacians=self.laplacians_1
+            laplacians=self.laplacians_1,
+            dobias=True
         )
         self.fc = nn.Linear(
             in_features=self.node_num * self.filter_num * self.feature_num,
@@ -97,7 +98,8 @@ class FineGrained2GNN(nn.Module):
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
             K=self.K,    # 3
-            laplacians=laplacians_2
+            laplacians=laplacians_2,
+            dobias=True
         ).to(DEVICE)
 
         gc_output_2 = self.gc_expert_2(input_box)  # (100, 62, 160)
@@ -151,7 +153,8 @@ class FineGrained3GNN(nn.Module):
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
             K=self.K,                       # 2
-            laplacians=self.laplacians_1
+            laplacians=self.laplacians_1,
+            dobias=True
         )
         self.fc = nn.Linear(
             in_features=self.node_num * self.filter_num * self.feature_num,
@@ -200,7 +203,8 @@ class FineGrained3GNN(nn.Module):
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
             K=self.K,                       # 2
-            laplacians=laplacians_list_2
+            laplacians=laplacians_list_2,
+            dobias=False
         ).to(DEVICE)
 
         gc_output_2 = self.gc_expert_2(input_box_1)  # (100, 62, 160)
@@ -219,7 +223,8 @@ class FineGrained3GNN(nn.Module):
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
             K=self.K,                       # 2
-            laplacians=laplacians_list_3
+            laplacians=laplacians_list_3,
+            dobias=False
         ).to(DEVICE)
         gc_output_3 = self.gc_expert_3(input_box_2)  # (100, 62, 160)
         batch_size, node_num, feature_len = gc_output_3.size()
@@ -254,14 +259,14 @@ class ChebshevGCNN(nn.Module):
                                     K=self.K,
                                     laplacians=laplacians)
     """
-    def __init__(self, in_channels, filter_num, K, laplacians):
+    def __init__(self, in_channels, filter_num, K, laplacians, dobias=True):
         super(ChebshevGCNN, self).__init__()
         self.weight = nn.Parameter(torch.Tensor(K + 1, filter_num))     # in_channels = 5
         self.bias = nn.Parameter(torch.Tensor(1, 1, filter_num * in_channels))  # (1, 1, 160)
         self.K = K
         self.filter_num = filter_num
         self.laplacians = laplacians
-
+        self.dobias = dobias
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -324,7 +329,8 @@ class ChebshevGCNN(nn.Module):
 
     def forward(self, x):
         x = self.chebyshev(x)
-        x = self.brelu(x)
+        if self.dobias:
+            x = self.brelu(x)
         return x
 
 
