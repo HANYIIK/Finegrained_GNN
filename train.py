@@ -51,7 +51,7 @@ class Trainer(object):
         self.model = FineGrained2GNN(self.args, adj=self.adj_matrix).to(DEVICE)
         self.model.apply(model_utils.weight_init)
 
-        # 加载 Optimizer 与 Loss
+        # 加载 Optimizer / Loss Function / LR
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.args.learning_rate)
         self.lr_scheduler = ReduceLROnPlateau(self.optimizer, patience=4, verbose=True)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
