@@ -150,7 +150,7 @@ class FineGrained3GNN(nn.Module):
         self.gc = ChebshevGCNN(
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
-            K=self.K,                       # 3
+            K=self.K,                       # 2
             laplacians=self.laplacians_1
         )
         self.fc = nn.Linear(
@@ -199,7 +199,7 @@ class FineGrained3GNN(nn.Module):
         self.gc_expert_2 = ChebshevGCNN(
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
-            K=self.K,    # 3
+            K=self.K,                       # 2
             laplacians=laplacians_list_2
         ).to(DEVICE)
 
@@ -218,7 +218,7 @@ class FineGrained3GNN(nn.Module):
         self.gc_expert_3 = ChebshevGCNN(
             in_channels=self.feature_num,   # 5
             filter_num=self.filter_num,     # 32
-            K=self.K,  # 3
+            K=self.K,                       # 2
             laplacians=laplacians_list_3
         ).to(DEVICE)
         gc_output_3 = self.gc_expert_3(input_box_2)  # (100, 62, 160)

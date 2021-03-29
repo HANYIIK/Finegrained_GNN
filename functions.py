@@ -194,7 +194,7 @@ def read_mat(args):
 
     return traindata_list, trainlabel_list, testdata_list, testlabel_list
 
-
+# 工具人函数
 def load_one_people_npy(args, people=5):
     """
     :: 功能: 读【一个人】 .npy 文件中的 traindata、trainlabel、testdata、testlabel
@@ -285,7 +285,7 @@ def load_npy(args):
 
     return traindata_list, trainlabel_list, testdata_list, testlabel_list
 
-
+# 工具人函数
 def get_config():
     """
     :: 功能: 读取配置信息
@@ -340,7 +340,13 @@ def get_config():
     :: 用法:
     """
     parser = argparse.ArgumentParser()
+    # 跑一个 Attention 用的 rate
     parser.add_argument('--rate', type=float, default=0.5, choices=[0.4, 0.5])
+
+    # 跑两个 Attention 用的 rate_1, rate_2
+    parser.add_argument('--rate_1', type=float, default=0.5, choices=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+    parser.add_argument('--rate_2', type=float, default=0.4, choices=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
+
     arguments= parser.parse_args()
     arguments = vars(arguments)
 
@@ -362,7 +368,7 @@ def get_config():
 
     return arguments
 
-
+# 工具人函数
 def get_folders(args):
     dataset = args.dataset_name
     path_list = [f"./res/{dataset}/confusion_matrix", f"./res/{dataset}/state_dict", ]
