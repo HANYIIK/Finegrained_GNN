@@ -78,19 +78,18 @@ class GradCam:
         one_hot.backward(retain_graph=True)
 
         grads_val = self.extractor.get_gradients()[-1]  # (100, 62, 160)
-        # grads_val = F.relu(grads_val)
 
         weight = grads_val.cpu().detach().numpy()   # (100, 62, 160)
         weight = np.mean(weight, axis=1)       # (100, 160)
         target = features.cpu().detach().numpy()    # (100, 62, 160)
 
-        nodes_cam = []          # (100, 62)
-        node_heat_mask = []     # (100, 62)
+        nodes_cam = []          # (100, 62) nodes heat CAM
+        node_heat_mask = []     # (100, 62) node heat processed MASK
 
         indices_list = []
 
         for i, a_graph in enumerate(target):
-            nodes_cam.append(a_graph.dot(weight[i]))
+            nodes_cam.append(np.maximum(a_graph.dot(weight[i]), 0))     # Relu nodes heat
 
         for j, a_node_heat in enumerate(nodes_cam):
             heat_max = np.max(a_node_heat)
