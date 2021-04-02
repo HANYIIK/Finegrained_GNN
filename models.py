@@ -14,7 +14,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from functions import get_config
-from grad_cam import GradCam
+from grad_cam_faster import GradCam
 from utils import graph_utils
 from utils import model_utils
 
@@ -458,7 +458,7 @@ def get_bbox(x, adjs, indices):
 # 邻接矩阵置零
 def adj_set_zero(adj_matrix, indices):
     """
-    :: 功能: 把 adj_matrix 按照 indices 中指定的'行'与'列'置零
+    :: 功能: 把 adj_matrix 按照 indices 中指定的'行'与'列'赋值，其他置零
     :: 输入: numpy 类型的 adj_matrix
     :: 输出: 置零后的 numpy 类型的 adj_matrix
     :: 用法:
@@ -478,7 +478,7 @@ def adj_set_zero(adj_matrix, indices):
 # Input 矩阵置零
 def set_zero(matrix, indices):
     """
-    :: 功能: 把 matrix 按照 indices 中指定的'行'置零
+    :: 功能: 把 matrix 按照 indices 中指定的'行'赋值，其他置零
     :: 输入: numpy 类型的 matrix
     :: 输出: 置零后的 numpy 类型的 matrix
     :: 用法:
