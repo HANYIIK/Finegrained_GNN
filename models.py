@@ -14,7 +14,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from functions import get_config
-from grad_cam_faster import GradCam
+from grad_cam import GradCam_filter
 from utils import graph_utils
 from utils import model_utils
 
@@ -88,7 +88,7 @@ class FineGrained2GNN(nn.Module):
         logits_1 = self.fc_expert_1(gc_output_1_re)      # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate)
+            grad_cam = GradCam_filter(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate)
             mask, nodes_cam = grad_cam(x.detach(), y)
 
         input_box, laplacians_2, adjs_2 = get_bbox(x=x, adjs=self.adjs_1, indices=mask)
@@ -193,7 +193,7 @@ class FineGrained3GNN(nn.Module):
         logits_1 = self.fc_expert_1(gc_output_1_re)      # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate_1)
+            grad_cam = GradCam_filter(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate_1)
             mask_1, nodes_cam_1 = grad_cam(x.detach(), y)
 
         input_box_1, laplacians_list_2, adjs_2 = get_bbox(x=x, adjs=self.adjs_1, indices=mask_1)
@@ -213,7 +213,7 @@ class FineGrained3GNN(nn.Module):
         logits_2 = self.fc_expert_2(gc_output_2_re)  # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_2, fc=self.fc_expert_2, rate=self.rate_2)
+            grad_cam = GradCam_filter(model=self, feature_extractor=self.gc_expert_2, fc=self.fc_expert_2, rate=self.rate_2)
             mask_2, nodes_cam_2 = grad_cam(input_box_1.detach(), y)
 
         input_box_2, laplacians_list_3, adjs_3 = get_bbox(x=input_box_1, adjs=adjs_2, indices=mask_2)
