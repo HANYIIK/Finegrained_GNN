@@ -40,7 +40,7 @@ class Node_heater(object):
         self.adj_matrix = EEGDataset.build_graph()
 
         self.max_acc = None
-        self.state_dict_path = f'./res/{self.args.dataset_name}/state_dict/{self.people_index}_params.pkl'
+        self.state_dict_path = f'/Users/hanyiik/Desktop/liyang_res/{self.args.dataset_name}/state_dict/{self.people_index}_params.pkl'
 
         # 制作 DataLoader
         self.test_dataset = EEGDataset(self.args, istrain=False, people=self.people_index)
@@ -54,20 +54,22 @@ class Node_heater(object):
         self.model.eval()
         node_heats = np.zeros((1, 62))
         node_heats_list = []
+        indices_list = []
         with torch.no_grad():
             for step, batch in enumerate(self.test_loader):
                 data, labels = batch[0].to(DEVICE), batch[1]
-                logits, cam_1 = self.model(data, None)
+                logits, cam_1, indices = self.model(data, None)
                 pred_y = np.argmax(F.softmax(logits, dim=-1).cpu().detach().numpy(), axis=1)    # (batch_size,)
                 labels = labels.numpy()     # (batch_size,)
-                for pd_y, gt_y, my_cam in zip(pred_y, labels, cam_1):
+                for pd_y, gt_y, my_cam, mask in zip(pred_y, labels, cam_1, indices):
                     if pd_y == gt_y:
+                        indices_list.append(mask)
                         node_heats_list.append(my_cam)
                         node_heats += my_cam
-        return node_heats, node_heats_list
+        return node_heats, node_heats_list, indices_list
 
 if __name__ == '__main__':
     args = get_config()
-    heater = Node_heater(args, 5)
-    cam_map, cam_map_list = heater.test()
+    heater = Node_heater(args, 3)
+    cam_map, cam_map_list, mask_list = heater.test()
     print(cam_map)
