@@ -23,14 +23,14 @@ TXT_PATH=f'../res/{DATASET_NAME}/1.txt'
 # xls 文件路径
 XLS_PATH=f'../res/{DATASET_NAME}/result.xlsx'
 
-# 李阳服务器跑的 xls 文件路径
-UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/liyang_res/{DATASET_NAME}/result.xlsx'
+# ly服务器跑的 xls 文件路径
+UPDATE_XLS_PATH = f'F:/liyang_res/{DATASET_NAME}/result.xlsx'
 
-# 韩一轲服务器跑的 xls 文件路径
-FINAL_XLS_PATH = f'/Users/hanyiik/Desktop/final_res/{DATASET_NAME}/result.xlsx'
+# hyk服务器跑的 xls 文件路径
+FINAL_XLS_PATH = f'C:/Users/HANYIIK/Desktop/final_res/{DATASET_NAME}/result.xlsx'
 
-# 李阳服务器跑的 state_dict 文件路径
-STATE_DICT_PATH = f'/Users/hanyiik/Desktop/liyang_res/{DATASET_NAME}/state_dict/'
+# ly服务器跑的 state_dict 文件路径
+STATE_DICT_PATH = f'F:/liyang_res/{DATASET_NAME}/state_dict/'
 
 
 def use_txt_update_xlsx(txt_path, xls_path):

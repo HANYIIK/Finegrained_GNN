@@ -24,7 +24,7 @@ def create_npy(args):
     """
     train_dataset_list, train_labelset_list, test_dataset_list, test_labelset_list = read_mat(args)
 
-    if args.dataset_name == 'MPED':
+    if args.dataset_name == 'MPED' or 'SEED_IV':
         for r in range(1, args.people_num+1):
             np.save(args.npy + args.dataset_name + '/' + 'data_' + args.dataset_size + '/train_dataset_{}.npy'.format(r),
                     train_dataset_list[r - 1])
@@ -47,9 +47,6 @@ def create_npy(args):
             np.save(args.npy + args.dataset_name + '/' + 'data_' + args.dataset_size + '/test_labelset_{}.npy'.format(r),
                     test_labelset_list[r - 1]+1)
             print('成功保存第{}个人的数据！'.format(r))
-
-    elif args.dataset_name == 'SEED_IV':
-        raise RuntimeError("SEED_IV 待完善！")
 
     else:
         raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV")
@@ -164,22 +161,20 @@ def read_mat(args):
 
         elif args.dataset_name == 'SEED_IV':
             if args.dataset_size == 'small':
-                for time in range(1, 4):
-                    traindata, trainlabel, testdata, testlabel = \
-                        load_one_mat_file('SEED4forGNN{}_session{}.mat'.format(j, time), flag=2)
-                    if args.normalize:
-                        traindata = normalization(traindata)
-                        testdata = normalization(testdata)
-                    print('load SEED4forGNN{}_session{}.mat finished!'.format(j, time))
+                traindata, trainlabel, testdata, testlabel = \
+                    load_one_mat_file('SEED4forGNN{}.mat'.format(j), flag=2)
+                if args.normalize:
+                    traindata = normalization(traindata)
+                    testdata = normalization(testdata)
+                print('load SEED4forGNN{}.mat finished!'.format(j))
 
             elif args.dataset_size == 'large':
-                for time in range(1, 4):
-                    traindata, trainlabel, testdata, testlabel = \
-                        load_one_mat_file('SEED4forGNN{}_transfer_subject_session{}.mat'.format(j, time), flag=2)
-                    if args.normalize:
-                        traindata = normalization(traindata)
-                        testdata = normalization(testdata)
-                    print('load SEED4forGNN{}_transfer_subject_session{}.mat finished!'.format(j, time))
+                traindata, trainlabel, testdata, testlabel = \
+                    load_one_mat_file('SEED4forGNN{}_transfer_subject.mat'.format(j), flag=2)
+                if args.normalize:
+                    traindata = normalization(traindata)
+                    testdata = normalization(testdata)
+                print('load SEED4forGNN{}_transfer_subject.mat finished!'.format(j))
 
             else:
                 raise RuntimeError("请输入正确的数据集大小: small/large")
@@ -210,7 +205,7 @@ def load_one_people_npy(args, people=5):
     if people == 0:
         raise RuntimeError("改代码去吧，people 这个参数要从 1 开始循环(提示：for people in range(1, args.people_num+1):)")
     else:
-        if args.dataset_name == 'MPED' or args.dataset_name == 'SEED':
+        if args.dataset_name == 'MPED' or args.dataset_name == 'SEED' or args.dataset_name == 'SEED_IV':
             traindata = np.load(
                 args.npy + args.dataset_name + '/data_' + args.dataset_size + '/train_dataset_{}.npy'.format(people))
             trainlabel = np.load(
@@ -219,10 +214,6 @@ def load_one_people_npy(args, people=5):
                 args.npy + args.dataset_name + '/data_' + args.dataset_size + '/test_dataset_{}.npy'.format(people))
             testlabel = np.load(
                 args.npy + args.dataset_name + '/data_' + args.dataset_size + '/test_labelset_{}.npy'.format(people))
-
-        elif args.dataset_name == 'SEED_IV':
-            raise RuntimeError("SEED_IV 待完善！")
-
         else:
             raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV")
 
@@ -244,8 +235,10 @@ def test_load_npy_shape(args):
         print('shuffle people:', x)
         print('traindata.shape =', train_data_list[x-1].shape)
         print('trainlabel.shape =', train_label_list[x-1].shape)
+        print('trainlabel:\n', train_label_list[x - 1])
         print('testdata.shape =', test_data_list[x-1].shape)
         print('testlabel.shape =', test_label_list[x-1].shape)
+        print('testlabel:\n', test_label_list[x - 1])
         print('\n')
 
 def load_npy(args):
@@ -265,7 +258,7 @@ def load_npy(args):
     testdata_list = []
     testlabel_list = []
 
-    if args.dataset_name == 'MPED' or args.dataset_name == 'SEED':
+    if args.dataset_name == 'MPED' or args.dataset_name == 'SEED' or args.dataset_name == 'SEED_IV':
         for k in range(1, args.people_num+1):
             traindata = np.load(args.npy + args.dataset_name + '/data_' + args.dataset_size + '/train_dataset_{}.npy'.format(k))
             trainlabel = np.load(args.npy + args.dataset_name + '/data_' + args.dataset_size + '/train_labelset_{}.npy'.format(k))
@@ -276,10 +269,6 @@ def load_npy(args):
             trainlabel_list.append(trainlabel)
             testdata_list.append(testdata)
             testlabel_list.append(testlabel)
-
-    elif args.dataset_name == 'SEED_IV':
-        raise RuntimeError("SEED_IV 待完善！")
-
     else:
         raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV")
 
