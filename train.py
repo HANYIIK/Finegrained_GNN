@@ -123,6 +123,9 @@ class Trainer(object):
 if __name__ == '__main__':
     my_args = get_config()
     get_folders(my_args)
+    
+    if my_args.dataset_name == 'SEED' and my_args.dataset_size == 'large' and my_args.people_num == 45:
+        raise RuntimeError('处理 SEED large 数据之前，请先将 people_num 改为 15！')
 
     if my_args.dataset_name == 'MPED':
         bad = [10, 11, 12, 13, 14, 21, 25, 26, 27, 30]
