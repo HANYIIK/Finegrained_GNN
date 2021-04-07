@@ -24,7 +24,7 @@ def create_npy(args):
     """
     train_dataset_list, train_labelset_list, test_dataset_list, test_labelset_list = read_mat(args)
 
-    if args.dataset_name == 'MPED' or 'SEED_IV':
+    if args.dataset_name == 'MPED' or args.dataset_name == 'SEED_IV':
         for r in range(1, args.people_num+1):
             np.save(args.npy + args.dataset_name + '/' + 'data_' + args.dataset_size + '/train_dataset_{}.npy'.format(r),
                     train_dataset_list[r - 1])
@@ -152,12 +152,20 @@ def read_mat(args):
                 raise RuntimeError("请输入正确的数据集大小: small/large")
 
         elif args.dataset_name == 'SEED':
-            traindata, trainlabel, testdata, testlabel = \
-                load_one_mat_file('SEEDforGNN{}.mat'.format(j), flag=1)
-            if args.normalize:
-                traindata = normalization(traindata)
-                testdata = normalization(testdata)
-            print('load SEEDforGNN{}.mat finished!'.format(j))
+            if args.dataset_size == 'small':
+                traindata, trainlabel, testdata, testlabel = \
+                    load_one_mat_file('SEEDforGNN{}.mat'.format(j), flag=1)
+                if args.normalize:
+                    traindata = normalization(traindata)
+                    testdata = normalization(testdata)
+                print('load SEEDforGNN{}.mat finished!'.format(j))
+            elif args.dataset_size == 'large':
+                traindata, trainlabel, testdata, testlabel = \
+                    load_one_mat_file('SEEDforGNN{}_transfer15.mat'.format(j), flag=1)
+                if args.normalize:
+                    traindata = normalization(traindata)
+                    testdata = normalization(testdata)
+                print('load SEEDforGNN{}_transfer15.mat finished!'.format(j))
 
         elif args.dataset_name == 'SEED_IV':
             if args.dataset_size == 'small':
@@ -221,7 +229,7 @@ def load_one_people_npy(args, people=5):
 
 def test_load_npy_shape(args):
     """
-    :: 功能: 测试读取的 .npy 文件的 shape 对不对，无视
+    :: 功能: 测试生成的 .npy 文件的 shape 对不对，无视
     :: 输入:
     :: 输出:
     :: 用法:
@@ -370,5 +378,7 @@ def get_folders(args):
 
 if __name__ == '__main__':
     my_args = get_config()
+    if my_args.dataset_name == 'SEED' and my_args.dataset_size == 'large' and my_args.people_num == 45:
+        raise RuntimeError('处理 SEED large 数据之前，请先将 people_num 改为 15！')
     create_npy(my_args)
     test_load_npy_shape(my_args)
