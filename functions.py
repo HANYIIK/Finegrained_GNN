@@ -380,5 +380,11 @@ if __name__ == '__main__':
     my_args = get_config()
     if my_args.dataset_name == 'SEED' and my_args.dataset_size == 'large' and my_args.people_num == 45:
         raise RuntimeError('处理 SEED large 数据之前，请先将 people_num 改为 15！')
+
+    # 新环境中自动新建 .npy 文件夹, 再也不用手动建文件夹啦！
+    path = my_args.npy + my_args.dataset_name + '/data_' + my_args.dataset_size
+    if not os.path.exists(path):
+        os.makedirs(path)
+
     create_npy(my_args)
     test_load_npy_shape(my_args)
