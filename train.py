@@ -69,7 +69,7 @@ class Trainer(object):
             for step, (data, labels) in enumerate(self.train_loader):
                 self.model.train()
                 data, labels = data.to(DEVICE), labels.to(DEVICE)
-                logits, cam_1 = self.model(data, labels)
+                logits, cam_1, mask_1 = self.model(data, labels)
                 loss = self.criterion(logits, labels.long())
                 self.mean_loss.update(loss.cpu().detach().numpy())
 
@@ -111,7 +111,7 @@ class Trainer(object):
         with torch.no_grad():
             for step, batch in enumerate(self.test_loader):
                 data, labels = batch[0].to(DEVICE), batch[1]
-                logits, cam_1 = self.model(data, None)
+                logits, cam_1, mask_1 = self.model(data, None)
                 probs = F.softmax(logits, dim=-1).cpu().detach().numpy()
                 labels = labels.numpy()
                 self.mean_accuracy.update(probs, labels)
@@ -127,6 +127,8 @@ if __name__ == '__main__':
     if my_args.dataset_name == 'SEED' and my_args.dataset_size == 'large' and my_args.people_num == 45:
         raise RuntimeError('处理 SEED large 数据之前，请先将 people_num 改为 15！')
 
+    run_select = int(input('选择要跑的人群(1-full, 2-bad, 3-middle, 4-good):'))
+
     if my_args.dataset_name == 'MPED':
         bad = [10, 11, 12, 13, 14, 21, 25, 26, 27, 30]
         middle = [2, 7, 8, 15, 16]
@@ -137,10 +139,14 @@ if __name__ == '__main__':
         middle = [5, 37]
         good = [1, 2, 4, 7, 9, 10, 16, 19, 20, 22, 23, 24, 25, 26, 27, 30, 32, 33, 36, 38, 40, 41, 43, 44, 45]
 
+    elif my_args.dataset_name == 'SEED_IV':
+        bad = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]
+        middle = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]
+        good = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]
+
     else:
         raise RuntimeError('请选择正确的数据集!')
 
-    run_select = int(input('选择要跑的人群(1-full, 2-bad, 3-middle, 4-good):'))
     if run_select == 1:
         # ① 暴力全跑
         for people in range(1, my_args.people_num+1):
