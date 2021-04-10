@@ -152,24 +152,28 @@ if __name__ == '__main__':
         for people in range(1, my_args.people_num+1):
             trainer = Trainer(my_args, people_index=people)
             trainer.run()
+            print(f'第{people}个人跑完了！')
 
     elif run_select == 2:
         # ② 跑烂
         for people in bad:
             trainer = Trainer(my_args, people_index=people)
             trainer.run()
+            print(f'第{people}个人跑完了！')
 
     elif run_select == 3:
         # ③ 跑中
         for people in middle:
             trainer = Trainer(my_args, people_index=people)
             trainer.run()
+            print(f'第{people}个人跑完了！')
 
     elif run_select == 4:
         # ④ 跑好
         for people in good:
             trainer = Trainer(my_args, people_index=people)
             trainer.run()
+            print(f'第{people}个人跑完了！')
 
     else:
         raise RuntimeError('请做出正确的选择!')
