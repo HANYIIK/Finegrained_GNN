@@ -139,7 +139,6 @@ def read_mat(args):
                     traindata = normalization(traindata)
                     testdata = normalization(testdata)
                 print('load MPED7forGNN{}.mat finished!'.format(j))
-
             elif args.dataset_size == 'large':
                 traindata, trainlabel, testdata, testlabel = \
                     load_one_mat_file('MPED7forGNN{}_transfer_subject.mat'.format(j), flag=0)
@@ -147,7 +146,6 @@ def read_mat(args):
                     traindata = normalization(traindata)
                     testdata = normalization(testdata)
                 print('load MPED7forGNN{}_transfer_subject.mat finished!'.format(j))
-
             else:
                 raise RuntimeError("请输入正确的数据集大小: small/large")
 
@@ -166,6 +164,8 @@ def read_mat(args):
                     traindata = normalization(traindata)
                     testdata = normalization(testdata)
                 print('load SEEDforGNN{}_transfer15.mat finished!'.format(j))
+            else:
+                raise RuntimeError("请输入正确的数据集大小: small/large")
 
         elif args.dataset_name == 'SEED_IV':
             if args.dataset_size == 'small':
@@ -175,7 +175,6 @@ def read_mat(args):
                     traindata = normalization(traindata)
                     testdata = normalization(testdata)
                 print('load SEED4forGNN{}.mat finished!'.format(j))
-
             elif args.dataset_size == 'large':
                 traindata, trainlabel, testdata, testlabel = \
                     load_one_mat_file('SEED4forGNN{}_transfer_subject.mat'.format(j), flag=2)
@@ -183,7 +182,6 @@ def read_mat(args):
                     traindata = normalization(traindata)
                     testdata = normalization(testdata)
                 print('load SEED4forGNN{}_transfer_subject.mat finished!'.format(j))
-
             else:
                 raise RuntimeError("请输入正确的数据集大小: small/large")
 

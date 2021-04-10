@@ -12,7 +12,7 @@ import os
 
 
 # 更新哪个数据集
-DATASET_NAME = 'SEED'
+DATASET_NAME = 'MPED'
 
 # 跑的 model 的版本
 EXPERTS = '2 Experts'
@@ -24,13 +24,13 @@ TXT_PATH=f'../res/{DATASET_NAME}/1.txt'
 XLS_PATH=f'../res/{DATASET_NAME}/result.xlsx'
 
 # ly服务器跑的 xls 文件路径
-UPDATE_XLS_PATH = f'F:/liyang_res/{DATASET_NAME}/result.xlsx'
+UPDATE_XLS_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/result.xlsx'
+
+# ly服务器跑的 state_dict 文件路径
+STATE_DICT_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/state_dict/'
 
 # hyk服务器跑的 xls 文件路径
 FINAL_XLS_PATH = f'C:/Users/HANYIIK/Desktop/final_res/{DATASET_NAME}/result.xlsx'
-
-# ly服务器跑的 state_dict 文件路径
-STATE_DICT_PATH = f'F:/liyang_res/{DATASET_NAME}/state_dict/'
 
 
 def use_txt_update_xlsx(txt_path, xls_path):
