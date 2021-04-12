@@ -128,6 +128,7 @@ if __name__ == '__main__':
         raise RuntimeError('处理 SEED large 数据之前，请先将 people_num 改为 15！')
 
     run_select = int(input('选择要跑的人群(1-full, 2-bad, 3-middle, 4-good):'))
+    run_dic = {'1':'全部', '2':'较差', '3':'中等', '4':'较好'}
 
     if my_args.dataset_name == 'MPED':
         bad = [10, 11, 12, 13, 14, 21, 25, 26, 27, 30]
@@ -140,9 +141,9 @@ if __name__ == '__main__':
         good = [1, 2, 4, 7, 9, 10, 16, 19, 20, 22, 23, 24, 25, 26, 27, 30, 32, 33, 36, 38, 40, 41, 43, 44, 45]
 
     elif my_args.dataset_name == 'SEED_IV':
-        bad = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]
-        middle = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]
-        good = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]
+        bad = [41, 42, 43, 44, 45]
+        middle = [41, 42, 43, 44, 45]
+        good = [41, 42, 43, 44, 45]
 
     else:
         raise RuntimeError('请选择正确的数据集!')
@@ -151,6 +152,7 @@ if __name__ == '__main__':
         # ① 暴力全跑
         for people in range(1, my_args.people_num+1):
             trainer = Trainer(my_args, people_index=people)
+            print(f'正在跑的是:{my_args.dataset_name}|{my_args.dataset_size}|{run_dic[str(run_select)]}|第{people}个人!')
             trainer.run()
             print(f'第{people}个人跑完了！')
 
@@ -158,6 +160,7 @@ if __name__ == '__main__':
         # ② 跑烂
         for people in bad:
             trainer = Trainer(my_args, people_index=people)
+            print(f'正在跑的是:{my_args.dataset_name}|{my_args.dataset_size}|{run_dic[str(run_select)]}|第{people}个人!')
             trainer.run()
             print(f'第{people}个人跑完了！')
 
@@ -165,6 +168,7 @@ if __name__ == '__main__':
         # ③ 跑中
         for people in middle:
             trainer = Trainer(my_args, people_index=people)
+            print(f'正在跑的是:{my_args.dataset_name}|{my_args.dataset_size}|{run_dic[str(run_select)]}|第{people}个人!')
             trainer.run()
             print(f'第{people}个人跑完了！')
 
@@ -172,6 +176,7 @@ if __name__ == '__main__':
         # ④ 跑好
         for people in good:
             trainer = Trainer(my_args, people_index=people)
+            print(f'正在跑的是:{my_args.dataset_name}|{my_args.dataset_size}|{run_dic[str(run_select)]}|第{people}个人!')
             trainer.run()
             print(f'第{people}个人跑完了！')
 

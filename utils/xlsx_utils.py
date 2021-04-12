@@ -23,13 +23,15 @@ TXT_PATH=f'../res/{DATASET_NAME}/1.txt'
 # xls 文件路径
 XLS_PATH=f'../res/{DATASET_NAME}/result.xlsx'
 
-# ly服务器跑的 xls 文件路径
-UPDATE_XLS_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/result.xlsx'
+# 用于更新的 xls 文件路径
+UPDATE_XLS_PATH = f'C:/Users/HANYIIK/Desktop/liyang_res/{DATASET_NAME}/result_res.xlsx'
+# UPDATE_XLS_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/result_res.xlsx'
 
-# ly服务器跑的 state_dict 文件路径
-STATE_DICT_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/state_dict/'
+# 用于更新的 state_dict 文件路径
+STATE_DICT_PATH = f'C:/Users/HANYIIK/Desktop/liyang_res/{DATASET_NAME}/state_dict/'
+# STATE_DICT_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/state_dict/'
 
-# hyk服务器跑的 xls 文件路径
+# 最终结果的 xls 文件路径
 FINAL_XLS_PATH = f'C:/Users/HANYIIK/Desktop/final_res/{DATASET_NAME}/result.xlsx'
 
 
