@@ -31,7 +31,7 @@ def bspline_basis(K, x, degree=3):
     Return the B-spline basis.
 
     K: number of control points.
-    x: evaluation points
+    final_cam: evaluation points
        or number of evenly distributed evaluation points.
     degree: degree of the spline. Cubic spline by default.
     """
@@ -44,7 +44,7 @@ def bspline_basis(K, x, degree=3):
     kv3 = x.max() * np.ones(degree)
     kv = np.concatenate((kv1, kv2, kv3))
 
-    # Cox - DeBoor recursive function to compute one spline over x.
+    # Cox - DeBoor recursive function to compute one spline over final_cam.
     def cox_deboor(k, d):
         # Test for end conditions, the rectangular degree zero spline.
         if (d == 0):

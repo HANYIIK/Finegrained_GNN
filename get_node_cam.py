@@ -40,7 +40,7 @@ class Node_heater(object):
         self.adj_matrix = EEGDataset.build_graph()
 
         self.max_acc = None
-        self.state_dict_path = f'/Users/hanyiik/Desktop/liyang_res/{self.args.dataset_name}/state_dict/{self.people_index}_params.pkl'
+        self.state_dict_path = f'./res/{self.args.dataset_name}/state_dict/{self.people_index}_params.pkl'
 
         # 制作 DataLoader
         self.test_dataset = EEGDataset(self.args, istrain=False, people=self.people_index)
@@ -65,11 +65,35 @@ class Node_heater(object):
                     if pd_y == gt_y:
                         indices_list.append(mask)
                         node_heats_list.append(my_cam)
-                        node_heats += my_cam
+                        node_heats += my_cam.cpu().numpy()
         return node_heats, node_heats_list, indices_list
 
 if __name__ == '__main__':
-    args = get_config()
-    heater = Node_heater(args, 3)
-    cam_map, cam_map_list, mask_list = heater.test()
-    print(cam_map)
+    my_args = get_config()
+    final_cam = np.zeros((1, 62))
+    for i in range(1, my_args.people_num+1):
+        print(f'在跑第{i}个人！')
+        heater = Node_heater(my_args, i)
+        cam_map, cam_map_list, mask_list = heater.test()
+        final_cam += cam_map
+    my_max = final_cam.max()
+    my_min = final_cam.min()
+    # 归一化
+    final_cam = (final_cam - my_min) / (my_max - my_min)
+    print(final_cam)
+    '''
+    【SEED_IV】
+    final_cam = np.array([[358.02830975, 397.62693249, 360.04074799, 433.3194194, 437.47416775,
+                       369.11361896, 380.12013738, 373.18390831, 363.13570242, 383.63839349,
+                       369.50463355, 381.45057664, 392.46794108, 374.15212427, 366.6902356,
+                       385.14821399, 379.32164557, 371.12723593, 366.72370139, 373.46293456,
+                       382.2605545, 390.6600531, 376.80254443, 363.65894461, 388.35032884,
+                       388.1036715, 379.77121568, 356.18921454, 374.74546209, 379.96486744,
+                       381.23051649, 362.09430574, 357.61257095, 383.89602231, 378.90529241,
+                       373.06315298, 343.33013481, 365.80006309, 369.67654443, 366.41895447,
+                       340.52308749, 350.58804548, 374.49928067, 363.48451422, 357.09976166,
+                       353.92510354, 357.89035524, 362.82189092, 360.25744053, 332.74040154,
+                       345.27173625, 372.99097317, 399.51515315, 358.21777594, 402.45792496,
+                       368.94185056, 332.69301865, 344.16478798, 339.22311612, 338.59097952,
+                       336.7045543, 335.18970799]])
+    '''

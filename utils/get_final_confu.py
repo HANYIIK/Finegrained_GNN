@@ -7,7 +7,7 @@
 import numpy as np
 import os
 
-DATASET_NAME = 'MPED'
+DATASET_NAME = 'SEED_IV'
 
 def get_final_confu_matrix(dataset_name):
     """
@@ -26,8 +26,8 @@ def get_final_confu_matrix(dataset_name):
         # MPED 是个 7 分类数据集
         out = np.zeros((7, 7))
     elif dataset_name == 'SEED_IV':
-        # SEED_IV 是个 4 分类数据集, 此处代码待补全。
-        raise RuntimeError('SEED_IV部分待完善！')
+        # SEED_IV 是个 4 分类数据集
+        out = np.zeros((4, 4))
     else:
         # 错误数据集名称报错
         raise RuntimeError('错误数据集名称输入！')
