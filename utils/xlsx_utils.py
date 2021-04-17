@@ -124,7 +124,7 @@ def replace_xlsx_acc(people_index, acc, xls_path):
                        dtype={'people': int, EXPERTS: float}).fillna(0)
     df = pd.DataFrame(df)
     df.loc[df['people']==people_index, EXPERTS] = acc
-    print(f'更新第{people_index}个人的数据为：{acc * 100:.2f}%')
+    print(f'【更新第{people_index}个人的数据为：{acc * 100:.2f}%】')
     df.to_excel(xls_path, engine='openpyxl', sheet_name='Sheet1')
 
 
