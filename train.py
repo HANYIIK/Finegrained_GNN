@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
     elif my_args.dataset_name == 'SEED':
         bad = [11, 14, 15, 17, 28, 34]
-        middle = [5, 30, 38, 39, 40]
+        middle = [5, 30, 37, 38, 40]
         good = [1, 2, 4, 7, 9, 10, 16, 19, 20, 22, 23, 24, 25, 27, 32, 33, 36, 41]
 
     elif my_args.dataset_name == 'SEED_IV':
