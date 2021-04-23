@@ -53,8 +53,10 @@ class Node_heater(object):
     def test(self):
         self.model.eval()
         node_heats = np.zeros((1, 62))
-        node_heats_list = []
-        indices_list = []
+
+        node_heats_positive = np.zeros((1, 62))
+        node_heats_negative = np.zeros((1, 62))
+
         with torch.no_grad():
             for step, batch in enumerate(self.test_loader):
                 data, labels = batch[0].to(DEVICE), batch[1]
@@ -63,24 +65,41 @@ class Node_heater(object):
                 labels = labels.numpy()     # (batch_size,)
                 for pd_y, gt_y, my_cam, mask in zip(pred_y, labels, cam_1, indices):
                     if pd_y == gt_y:
-                        indices_list.append(mask)
-                        node_heats_list.append(my_cam)
                         node_heats += my_cam.cpu().numpy()
-        return node_heats, node_heats_list, indices_list
+                        if pd_y == 0 or pd_y == 1:
+                            node_heats_positive += my_cam.cpu().numpy()
+                        elif pd_y == 2 or pd_y == 3:
+                            node_heats_negative += my_cam.cpu().numpy()
+        return node_heats, node_heats_positive, node_heats_negative
+
+
+def get_map(origin_cam):
+        the_max = origin_cam.max()
+        the_min = origin_cam.min()
+        return (origin_cam - the_min) / (the_max - the_min)
 
 if __name__ == '__main__':
     my_args = get_config()
     final_cam = np.zeros((1, 62))
+    final_cam_positive = np.zeros((1, 62))
+    final_cam_negative = np.zeros((1, 62))
+
     for i in range(1, my_args.people_num+1):
         print(f'在跑第{i}个人！')
         heater = Node_heater(my_args, i)
-        cam_map, cam_map_list, mask_list = heater.test()
+        cam_map, cam_map_positive, cam_map_negative = heater.test()
         final_cam += cam_map
-    my_max = final_cam.max()
-    my_min = final_cam.min()
+        final_cam_positive += cam_map_positive
+        final_cam_negative += cam_map_negative
+
     # 归一化
-    final_cam = (final_cam - my_min) / (my_max - my_min)
-    print(final_cam)
+    final_cam = get_map(final_cam)
+    final_cam_positive = get_map(final_cam_positive)
+    final_cam_negative = get_map(final_cam_negative)
+
+    print(f'全部：\n{final_cam}\n积极：\n{final_cam_positive}\n消极：\n{final_cam_negative}\n')
+
+
     '''
     【SEED_IV】
     0.12556422 0.54960047 0.14936516 0.94210945 1.         0.28011019
