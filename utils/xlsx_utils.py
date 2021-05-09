@@ -11,8 +11,8 @@ import pdb
 import os
 
 
-# 更新哪个数据集
-DATASET_NAME = 'MPED'
+# 【更新哪个数据集】
+DATASET_NAME = 'SEED'
 
 # 跑的 model 的版本
 EXPERTS = '2 Experts'
@@ -23,18 +23,28 @@ TXT_PATH=f'../res/{DATASET_NAME}/1.txt'
 # xls 文件路径
 XLS_PATH=f'../res/{DATASET_NAME}/result.xlsx'
 
-# 用于更新的 xls 文件路径
-UPDATE_XLS_PATH = f'C:/Users/HANYIIK/Desktop/liyang_res/{DATASET_NAME}/result.xlsx'
+
+# 【用于更新的 xls 文件路径】
+# UPDATE_XLS_PATH = f'C:/Users/HANYIIK/Desktop/liyang_res/{DATASET_NAME}/result.xlsx'
 # UPDATE_XLS_PATH = f'C:/Users/HANYIIK/Desktop/hyk_res/{DATASET_NAME}/result.xlsx'
 # UPDATE_XLS_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/result.xlsx'
+# ---------- Mac 环境 ----------
+# UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/liyang_res/{DATASET_NAME}/result.xlsx'
+UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/hyk_res/{DATASET_NAME}/result.xlsx'
 
-# 用于更新的 state_dict 文件路径
-STATE_DICT_PATH = f'C:/Users/HANYIIK/Desktop/liyang_res/{DATASET_NAME}/state_dict/'
+# 【用于更新的 state_dict 文件路径】
+# STATE_DICT_PATH = f'C:/Users/HANYIIK/Desktop/liyang_res/{DATASET_NAME}/state_dict/'
 # STATE_DICT_PATH = f'C:/Users/HANYIIK/Desktop/hyk_res/{DATASET_NAME}/state_dict/'
 # STATE_DICT_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/state_dict/'
+# ---------- Mac 环境 ----------
+# STATE_DICT_PATH = f'/Users/hanyiik/Desktop/liyang_res/{DATASET_NAME}/state_dict/'
+STATE_DICT_PATH = f'/Users/hanyiik/Desktop/hyk_res/{DATASET_NAME}/state_dict/'
 
-# 最终结果的 xls 文件路径
-FINAL_XLS_PATH = f'F:/final_res/{DATASET_NAME}/result.xlsx'
+
+# 【最终结果的 xls 文件路径】
+# FINAL_XLS_PATH = f'F:/final_res/{DATASET_NAME}/result.xlsx'
+# ---------- Mac 环境 ----------
+FINAL_XLS_PATH = f'/Users/hanyiik/Desktop/final_res/{DATASET_NAME}/result.xlsx'
 
 
 def use_txt_update_xlsx(txt_path, xls_path):
