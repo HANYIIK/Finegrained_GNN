@@ -18,10 +18,10 @@ DATASET_NAME = 'SEED'
 EXPERTS = '2 Experts'
 
 # txt 文件路径
-TXT_PATH=f'../res/{DATASET_NAME}/1.txt'
+TXT_PATH= f'../res/{DATASET_NAME}/1.txt'
 
 # xls 文件路径
-XLS_PATH=f'../res/{DATASET_NAME}/result.xlsx'
+XLS_PATH= f'../res/{DATASET_NAME}/result.xlsx'
 
 
 # 【用于更新的 xls 文件路径】
