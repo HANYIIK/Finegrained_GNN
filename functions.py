@@ -335,6 +335,10 @@ def get_config():
     :: 用法:
     """
     parser = argparse.ArgumentParser()
+
+    # 一轮的次数
+    parser.add_argument('--times', type=int, default=10, choices=[5, 10, 15, 20, 25, 30])
+
     # 跑一个 Attention 用的 rate
     parser.add_argument('--rate', type=float, default=0.5, choices=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
 
