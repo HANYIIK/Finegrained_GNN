@@ -28,17 +28,14 @@ XLS_PATH= f'../res/{DATASET_NAME}/result.xlsx'
 # ================================================ FROM ================================================
 # 【 xls 文件路径】
 # UPDATE_XLS_PATH = f'C:/Users/HANYIIK/Desktop/new_res/{DATASET_NAME}/result.xlsx'
-# UPDATE_XLS_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/result.xlsx'
 UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/new_res/{DATASET_NAME}/result.xlsx'
 
 # 【 state_dict 文件路径】
 # UPDATE_STATE_DICT_PATH = f'C:/Users/HANYIIK/Desktop/new_res/{DATASET_NAME}/state_dict/'
-# UPDATE_STATE_DICT_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/state_dict/'
 UPDATE_STATE_DICT_PATH = f'/Users/hanyiik/Desktop/new_res/{DATASET_NAME}/state_dict/'
 
 # 【 confusion_matrix 文件路径】
 # UPDATE_CONFU_DICT_PATH = f'C:/Users/HANYIIK/Desktop/new_res/{DATASET_NAME}/confusion_matrix/'
-# UPDATE_CONFU_DICT_PATH = f'F:/FB-relu-2GNN-run/res/{DATASET_NAME}/confusion_matrix/'
 UPDATE_CONFU_DICT_PATH = f'/Users/hanyiik/Desktop/new_res/{DATASET_NAME}/confusion_matrix/'
 # ======================================================================================================
 
@@ -164,7 +161,7 @@ def copy_files(from_path, to_path, file_name):
     a_from = os.path.join(from_path, file_name)
     a_to = os.path.join(to_path, file_name)
     shutil.copyfile(a_from, a_to)
-    print(f'已经将{from_path}/{file_name}拷贝至{to_path}/{file_name}!')
+    print(f'已经将{from_path}{file_name}拷贝至{to_path}{file_name}!')
 
 def use_xlsx_update_xlsx(final_xls_path, update_xls_path):
     """
