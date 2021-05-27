@@ -27,16 +27,16 @@ XLS_PATH= f'../res/{DATASET_NAME}/result.xlsx'
 
 # ================================================ FROM ================================================
 # 【 xls 文件路径】
-# UPDATE_XLS_PATH = f'C:/Users/HANYIIK/Desktop/new_res/{DATASET_NAME}/result.xlsx'
-UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/new_res/{DATASET_NAME}/result.xlsx'
+# UPDATE_XLS_PATH = f'C:/Users/HANYIIK/Desktop/res/{DATASET_NAME}/result.xlsx'
+UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/result.xlsx'
 
 # 【 state_dict 文件路径】
-# UPDATE_STATE_DICT_PATH = f'C:/Users/HANYIIK/Desktop/new_res/{DATASET_NAME}/state_dict/'
-UPDATE_STATE_DICT_PATH = f'/Users/hanyiik/Desktop/new_res/{DATASET_NAME}/state_dict/'
+# UPDATE_STATE_DICT_PATH = f'C:/Users/HANYIIK/Desktop/res/{DATASET_NAME}/state_dict/'
+UPDATE_STATE_DICT_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/state_dict/'
 
 # 【 confusion_matrix 文件路径】
-# UPDATE_CONFU_DICT_PATH = f'C:/Users/HANYIIK/Desktop/new_res/{DATASET_NAME}/confusion_matrix/'
-UPDATE_CONFU_DICT_PATH = f'/Users/hanyiik/Desktop/new_res/{DATASET_NAME}/confusion_matrix/'
+# UPDATE_CONFU_DICT_PATH = f'C:/Users/HANYIIK/Desktop/res/{DATASET_NAME}/confusion_matrix/'
+UPDATE_CONFU_DICT_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/confusion_matrix/'
 # ======================================================================================================
 
 
