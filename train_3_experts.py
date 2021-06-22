@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time     : 2021/3/8 11:50
+# @Time     : 2021/6/22 2:54 下午
 # @Author   : Hanyiik
-# @File     : train.py
-# @Function : 训练模型
+# @File     : train_3_experts.py
+# @Function : 3 个 GNN 的 train_2_experts.py
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,11 +16,10 @@ import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from models import FineGrained2GNN
+from models import FineGrained3GNN
 from dataset import EEGDataset
 from functions import get_config, get_folders
 from utils import train_utils, model_utils, xlsx_utils
-
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -48,7 +47,7 @@ class Trainer(object):
         self.test_loader = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False)
 
         # 加载模型
-        self.model = FineGrained2GNN(self.args, adj=self.adj_matrix).to(DEVICE)
+        self.model = FineGrained3GNN(self.args, adj=self.adj_matrix).to(DEVICE)
         self.model.apply(model_utils.weight_init)
 
         # 加载 Optimizer / Loss Function / LR
@@ -63,13 +62,13 @@ class Trainer(object):
     def run(self):
         self.max_acc = xlsx_utils.get_max_acc_in_xlsx(people_index=self.people_index, xls_path=self.xls_path)
 
-        for epoch in range(1, self.args.max_epochs+1):
+        for epoch in range(1, self.args.max_epochs + 1):
             self.mean_loss.reset()
 
             for step, (data, labels) in enumerate(self.train_loader):
                 self.model.train()
                 data, labels = data.to(DEVICE), labels.to(DEVICE)
-                logits, cam_1, mask_1 = self.model(data, labels)
+                logits, cam_1, cam_2, mask_1, mask_2 = self.model(data, labels)
                 loss = self.criterion(logits, labels.long())
                 self.mean_loss.update(loss.cpu().detach().numpy())
 
@@ -81,7 +80,8 @@ class Trainer(object):
                     acc, confusion = self.test()
                     if acc > self.max_acc:
                         # 准备改 xlsx 之前，先确认一下 xlsx 里面的 max_acc 是否被其他进程改过
-                        confirm_acc = xlsx_utils.get_max_acc_in_xlsx(people_index=self.people_index, xls_path=self.xls_path)
+                        confirm_acc = xlsx_utils.get_max_acc_in_xlsx(people_index=self.people_index,
+                                                                     xls_path=self.xls_path)
 
                         # 被改过了
                         if confirm_acc > self.max_acc:
@@ -111,7 +111,7 @@ class Trainer(object):
         with torch.no_grad():
             for step, batch in enumerate(self.test_loader):
                 data, labels = batch[0].to(DEVICE), batch[1]
-                logits, cam_1, mask_1 = self.model(data, None)
+                logits, cam_1, cam_2, mask_1, mask_2 = self.model(data, None)
                 probs = F.softmax(logits, dim=-1).cpu().detach().numpy()
                 labels = labels.numpy()
                 self.mean_accuracy.update(probs, labels)
@@ -123,12 +123,12 @@ class Trainer(object):
 if __name__ == '__main__':
     my_args = get_config()
     get_folders(my_args)
-    
+
     if my_args.dataset_name == 'SEED' and my_args.dataset_size == 'large' and my_args.people_num == 45:
         raise RuntimeError('处理 SEED large 数据之前，请先将 people_num 改为 15！')
 
     run_select = int(input('选择要跑的人群(1-full, 2-bad, 3-middle, 4-good):'))
-    run_dic = {'1':'全部', '2':'较差', '3':'中等', '4':'较好'}
+    run_dic = {'1': '全部', '2': '较差', '3': '中等', '4': '较好'}
 
     if my_args.dataset_name == 'MPED':
         bad = [3, 7, 12, 26, 30]

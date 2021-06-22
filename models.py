@@ -193,7 +193,7 @@ class FineGrained3GNN(nn.Module):
         logits_1 = self.fc_expert_1(gc_output_1_re)      # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam_filter(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate_1)
+            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate_1)
             mask_1, nodes_cam_1 = grad_cam(x.detach(), y)
 
         input_box_1, laplacians_list_2, adjs_2 = get_bbox(x=x, adjs=self.adjs_1, indices=mask_1)
@@ -213,7 +213,7 @@ class FineGrained3GNN(nn.Module):
         logits_2 = self.fc_expert_2(gc_output_2_re)  # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam_filter(model=self, feature_extractor=self.gc_expert_2, fc=self.fc_expert_2, rate=self.rate_2)
+            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_2, fc=self.fc_expert_2, rate=self.rate_2)
             mask_2, nodes_cam_2 = grad_cam(input_box_1.detach(), y)
 
         input_box_2, laplacians_list_3, adjs_3 = get_bbox(x=input_box_1, adjs=adjs_2, indices=mask_2)
@@ -224,7 +224,7 @@ class FineGrained3GNN(nn.Module):
             filter_num=self.filter_num,     # 32
             K=self.K,                       # 2
             laplacians=laplacians_list_3,
-            dobias=False
+            dobias=True
         ).to(DEVICE)
         gc_output_3 = self.gc_expert_3(input_box_2)  # (100, 62, 160)
         batch_size, node_num, feature_len = gc_output_3.size()
