@@ -13,7 +13,7 @@ import pandas as pd
 
 
 # 【更新哪个数据集】
-DATASET_NAME = 'SEED'
+DATASET_NAME = 'MPED'
 
 # 跑的 model 的版本
 EXPERTS = '2 Experts'
