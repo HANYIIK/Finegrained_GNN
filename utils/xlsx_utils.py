@@ -13,7 +13,7 @@ import pandas as pd
 
 
 # 【更新哪个数据集】
-DATASET_NAME = 'MPED'
+DATASET_NAME = 'SEED_IV'
 
 # 跑的 model 的版本
 EXPERTS = '2 Experts'
@@ -27,31 +27,31 @@ XLS_PATH= f'../res/{DATASET_NAME}/result.xlsx'
 
 # ================================================ FROM ================================================
 # 【 xls 文件路径】
-# UPDATE_XLS_PATH = f'C:/Users/HANYIIK/Desktop/res/{DATASET_NAME}/result.xlsx'
-UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/result.xlsx'
+UPDATE_XLS_PATH = f'C:/Users/user/Desktop/res/{DATASET_NAME}/result.xlsx'
+# UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/result.xlsx'
 
 # 【 state_dict 文件路径】
-# UPDATE_STATE_DICT_PATH = f'C:/Users/HANYIIK/Desktop/res/{DATASET_NAME}/state_dict/'
-UPDATE_STATE_DICT_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/state_dict/'
+UPDATE_STATE_DICT_PATH = f'C:/Users/user/Desktop/res/{DATASET_NAME}/state_dict/'
+# UPDATE_STATE_DICT_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/state_dict/'
 
 # 【 confusion_matrix 文件路径】
-# UPDATE_CONFU_DICT_PATH = f'C:/Users/HANYIIK/Desktop/res/{DATASET_NAME}/confusion_matrix/'
-UPDATE_CONFU_DICT_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/confusion_matrix/'
+UPDATE_CONFU_DICT_PATH = f'C:/Users/user/Desktop/res/{DATASET_NAME}/confusion_matrix/'
+# UPDATE_CONFU_DICT_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/confusion_matrix/'
 # ======================================================================================================
 
 
 # ================================================= TO =================================================
 # 【 xls 文件路径】
-# FINAL_XLS_PATH = f'F:/final_res/{DATASET_NAME}/result.xlsx'
-FINAL_XLS_PATH = f'/Users/hanyiik/Desktop/final_res/{DATASET_NAME}/result.xlsx'
+FINAL_XLS_PATH = f'C:/Users/user/Desktop/final_res/{DATASET_NAME}/result.xlsx'
+# FINAL_XLS_PATH = f'/Users/hanyiik/Desktop/final_res/{DATASET_NAME}/result.xlsx'
 
 # 【 state_dict 文件路径】
-# FINAL_STATE_DICT_PATH = f'F:/final_res/{DATASET_NAME}/state_dict/'
-FINAL_STATE_DICT_PATH = f'/Users/hanyiik/Desktop/final_res/{DATASET_NAME}/state_dict/'
+FINAL_STATE_DICT_PATH = f'C:/Users/user/Desktop/final_res/{DATASET_NAME}/state_dict/'
+# FINAL_STATE_DICT_PATH = f'/Users/hanyiik/Desktop/final_res/{DATASET_NAME}/state_dict/'
 
 # 【 confusion_matrix 文件路径】
-# FINAL_CONFU_DICT_PATH = f'F:/final_res/{DATASET_NAME}/confusion_matrix/'
-FINAL_CONFU_DICT_PATH = f'/Users/hanyiik/Desktop/final_res/{DATASET_NAME}/confusion_matrix/'
+FINAL_CONFU_DICT_PATH = f'C:/Users/user/Desktop/final_res/{DATASET_NAME}/confusion_matrix/'
+# FINAL_CONFU_DICT_PATH = f'/Users/hanyiik/Desktop/final_res/{DATASET_NAME}/confusion_matrix/'
 # ======================================================================================================
 
 
