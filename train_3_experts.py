@@ -127,7 +127,7 @@ if __name__ == '__main__':
     if my_args.dataset_name == 'SEED' and my_args.dataset_size == 'large' and my_args.people_num == 45:
         raise RuntimeError('处理 SEED large 数据之前，请先将 people_num 改为 15！')
 
-    run_select = int(input('选择要跑的人群(1-full, 2-bad, 3-middle, 4-good):'))
+    run_select = int(input('选择要跑的人群(1-full, 2-bad, 3-good):'))
     run_dic = {'1': '全部', '2': '不达标', '3': '达标'}
 
     if my_args.dataset_name == 'MPED':
