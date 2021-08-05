@@ -10,8 +10,8 @@
 
       "path": {
         "windows": {
-          "mat": "E:/DATASET/GNN_DATASETS/",
-          "npy": "E:/DATASET/GNN_NPY_DATASETS/"
+          "mat": "D:/DATASET/GNN_DATASETS/",
+          "npy": "D:/DATASET/GNN_NPY_DATASETS/"
         },
         "linux": {
           "mat": "/media/data/datasets/GNN_DATASETS/",
@@ -61,8 +61,8 @@
     },
 
     "ChebNet": {
-      "K": 2,
-      "filter_num": 32
+      "K": 3,
+      "filter_num": 256
     }
   }
 }

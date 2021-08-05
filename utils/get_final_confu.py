@@ -7,7 +7,8 @@
 import numpy as np
 import os
 
-DATASET_NAME = 'SEED_IV'
+DATASET_NAME = 'SEED'
+EXPERTS = 2
 
 def get_final_confu_matrix(dataset_name):
     """
@@ -16,7 +17,7 @@ def get_final_confu_matrix(dataset_name):
     :: 输出: 最终的 confusion matrix
     :: 用法: xxxx_confu = get_final_confu_matrix(XXXX)
     """
-    file_path = f'../res/{dataset_name}/confusion_matrix/'
+    file_path = f'../{EXPERTS}_experts_res/{dataset_name}/confusion_matrix/'
     confu_file_name = []
 
     if dataset_name == 'SEED':

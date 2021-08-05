@@ -48,19 +48,19 @@ class FineGrained2GNN(nn.Module):
         self.laplacians_1 = [laplacian for _ in range(self.batch_size)]
 
         # --- Gating Notwork
-        self.gc = ChebshevGCNN(
+        self.gc = ChebshevGNN(
             in_channels=self.feature_num,   # 5
-            filter_num=self.filter_num,     # 32
+            out_channels=self.filter_num,     # 32
             K=self.K,                       # 3
             laplacians=self.laplacians_1,
             dobias=True
         )
         self.fc = nn.Linear(
-            in_features=self.node_num * self.filter_num * self.feature_num,
+            in_features=self.node_num * self.filter_num,
             out_features=self.classes_num
         )
         self.cls = nn.Linear(
-            in_features=self.node_num * self.filter_num * self.feature_num,
+            in_features=self.node_num * self.filter_num,
             out_features=2
         )
 
@@ -88,15 +88,15 @@ class FineGrained2GNN(nn.Module):
         logits_1 = self.fc_expert_1(gc_output_1_re)      # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate)
+            grad_cam = GradCam_filter(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate)
             mask, nodes_cam = grad_cam(x.detach(), y)
 
         input_box, laplacians_2, adjs_2 = get_bbox(x=x, adjs=self.adjs_1, indices=mask)
 
         # ------------ Expert 2
-        self.gc_expert_2 = ChebshevGCNN(
+        self.gc_expert_2 = ChebshevGNN(
             in_channels=self.feature_num,   # 5
-            filter_num=self.filter_num,     # 32
+            out_channels=self.filter_num,     # 32
             K=self.K,    # 3
             laplacians=laplacians_2,
             dobias=True
@@ -149,19 +149,19 @@ class FineGrained3GNN(nn.Module):
         self.laplacians_1 = [laplacian for _ in range(self.batch_size)]
 
         # --- Gating Notwork
-        self.gc = ChebshevGCNN(
+        self.gc = ChebshevGNN(
             in_channels=self.feature_num,   # 5
-            filter_num=self.filter_num,     # 32
+            out_channels=self.filter_num,   # 32
             K=self.K,                       # 2
             laplacians=self.laplacians_1,
             dobias=True
         )
         self.fc = nn.Linear(
-            in_features=self.node_num * self.filter_num * self.feature_num,
+            in_features=self.node_num * self.filter_num,
             out_features=self.classes_num
         )
         self.cls = nn.Linear(
-            in_features=self.node_num * self.filter_num * self.feature_num,
+            in_features=self.node_num * self.filter_num,
             out_features=3
         )
 
@@ -193,15 +193,15 @@ class FineGrained3GNN(nn.Module):
         logits_1 = self.fc_expert_1(gc_output_1_re)      # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate_1)
+            grad_cam = GradCam_filter(model=self, feature_extractor=self.gc_expert_1, fc=self.fc_expert_1, rate=self.rate_1)
             mask_1, nodes_cam_1 = grad_cam(x.detach(), y)
 
         input_box_1, laplacians_list_2, adjs_2 = get_bbox(x=x, adjs=self.adjs_1, indices=mask_1)
 
         # ------------ Expert 2
-        self.gc_expert_2 = ChebshevGCNN(
+        self.gc_expert_2 = ChebshevGNN(
             in_channels=self.feature_num,   # 5
-            filter_num=self.filter_num,     # 32
+            out_channels=self.filter_num,     # 32
             K=self.K,                       # 2
             laplacians=laplacians_list_2,
             dobias=False
@@ -213,15 +213,15 @@ class FineGrained3GNN(nn.Module):
         logits_2 = self.fc_expert_2(gc_output_2_re)  # (100, 7)
 
         with torch.enable_grad():
-            grad_cam = GradCam(model=self, feature_extractor=self.gc_expert_2, fc=self.fc_expert_2, rate=self.rate_2)
+            grad_cam = GradCam_filter(model=self, feature_extractor=self.gc_expert_2, fc=self.fc_expert_2, rate=self.rate_2)
             mask_2, nodes_cam_2 = grad_cam(input_box_1.detach(), y)
 
         input_box_2, laplacians_list_3, adjs_3 = get_bbox(x=input_box_1, adjs=adjs_2, indices=mask_2)
 
         # ------------ Expert 3
-        self.gc_expert_3 = ChebshevGCNN(
+        self.gc_expert_3 = ChebshevGNN(
             in_channels=self.feature_num,   # 5
-            filter_num=self.filter_num,     # 32
+            out_channels=self.filter_num,     # 32
             K=self.K,                       # 2
             laplacians=laplacians_list_3,
             dobias=True
@@ -245,95 +245,6 @@ class FineGrained3GNN(nn.Module):
         return logits_gate, nodes_cam_1, nodes_cam_2, mask_1, mask_2
 
 
-# version 1
-class ChebshevGCNN(nn.Module):
-    """
-    :: 功能: 契比雪夫图卷积网络
-    :: 输入: in_channels - 输入节点的特征长度
-            filter_num - 需要几个卷积核
-            K - 看距离本节点多少条边的邻居
-            laplacians - 一个 batch 图的拉普拉斯矩阵 list
-    :: 输出: (batch_size, node_num, feature_len * kernel_num)
-    :: 用法: self.gc = ChebshevGCNN(in_channels=self.feature_len,
-                                    filter_num=self.filter_num,
-                                    K=self.K,
-                                    laplacians=laplacians)
-    """
-    def __init__(self, in_channels, filter_num, K, laplacians, dobias=True):
-        super(ChebshevGCNN, self).__init__()
-        self.weight = nn.Parameter(torch.Tensor(K + 1, filter_num))     # in_channels = 5
-        self.bias = nn.Parameter(torch.Tensor(1, 1, filter_num * in_channels))  # (1, 1, 160)
-        self.K = K
-        self.filter_num = filter_num
-        self.laplacians = laplacians
-        self.dobias = dobias
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        """
-        :: 功能: 把 weight 和 bias 重置一下
-        """
-        model_utils.truncated_normal_(self.weight, mean=0.0, std=0.1)
-        model_utils.truncated_normal_(self.bias, mean=0.0, std=0.1)
-
-    def chebyshev(self, x):
-        """
-        :: 功能: 契比雪夫多项式卷积部分
-        :: 输入: (batch_size, node_num, feature_len)类型的 Tensor
-        :: 输出: (batch_size, node_num, feature_len * kernel_num)类型的 Tensor
-        :: 用法: h1 = chebyshev(x)
-        """
-        batch_size, node_num, feature_len = x.size()    # (100, 62, 5)
-
-        x_split = []
-        for i, a_graph in enumerate(x):     # a_graph.shape = (62, 5)
-            '''
-            切比雪夫多项式:
-                x0 = x
-                x1 = L × x
-                x2 = 2 × L × x1 - x0
-                    ...
-                x(k) = 2 × L × x(k-1) - x(k-2)
-            '''
-            x0 = a_graph
-            x_list = [x0]
-            x1 = torch.sparse.mm(self.laplacians[i].to(DEVICE), x0)  # (62, 5)
-            x_list.append(x1)
-            if self.K > 1:
-                for k in range(2, self.K+1):
-                    x2 = 2 * torch.sparse.mm(self.laplacians[i].to(DEVICE), x1) - x0  # (62, 5)
-                    x_list.append(x2)
-                    x0, x1 = x1, x2
-
-            # [x0, x1, x2, ..., xK] 横着拼接起来
-            a_graph = torch.stack(x_list, dim=0).permute(1, 2, 0)  # (62, 5, K+1=3)
-            x_split.append(a_graph)
-
-        x = torch.stack(x_split, dim=0)     # (100, 62, 5, K+1=3)
-        x = torch.reshape(x, [batch_size * node_num * feature_len, self.K+1])   # (31000, K+1=3)
-
-        '''
-            x.shape = (batch_size * node_num * feature_len, K+1=4)
-            weight.shape = (K+1=4, 卷积核个数)
-            a0 * x0 + a1 * x1 + a2 * x2
-            [a0, a1, a2] 32个
-        '''
-        x = torch.matmul(x, self.weight)  # (31000, 卷积核个数)
-        x = torch.reshape(x, [batch_size, node_num, feature_len, self.filter_num])  # (100, 62, 5, 32)
-        x = torch.reshape(x, [batch_size, node_num, feature_len * self.filter_num])  # (100, 62, 160)
-        return x    # (100, 62, 160)
-
-    def brelu(self, x):
-        """Bias and ReLU. One bias per filter."""
-        return F.relu(x + self.bias)
-
-    def forward(self, x):
-        x = self.chebyshev(x)
-        if self.dobias:
-            x = self.brelu(x)
-        return x
-
-
 # version 2
 class ChebshevGNN(nn.Module):
     """
@@ -349,13 +260,14 @@ class ChebshevGNN(nn.Module):
                                     laplacians=laplacians)
     """
 
-    def __init__(self, in_channels, out_channels, K, laplacians):
+    def __init__(self, in_channels, out_channels, K, laplacians, dobias=True):
         super(ChebshevGNN, self).__init__()
         self.weight = nn.Parameter(torch.Tensor(K + 1, in_channels, out_channels))  # (K+1, 5, 32)
         self.bias = nn.Parameter(torch.Tensor(1, 1, out_channels))  # (1, 1, 32)
         self.K = K
         self.out_channels = out_channels
         self.laplacians = laplacians
+        self.dobias = dobias
 
         self.reset_parameters()
 
@@ -425,7 +337,8 @@ class ChebshevGNN(nn.Module):
 
     def forward(self, x):
         x = self.chebconv(x)
-        x = self.brelu(x)
+        if self.dobias:
+            x = self.brelu(x)
         return x
 
 

@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from models import FineGrained3GNN
+from models_v2 import FineGrained3GNN
 from dataset import EEGDataset
 from functions import get_config, get_folders
 from utils import train_utils, model_utils, xlsx_utils
@@ -140,9 +140,9 @@ if __name__ == '__main__':
 
     elif my_args.dataset_name == 'SEED_IV':
         # update
-        bad = [11, 13, 21, 28, 30, 35, 36, 39, 42, 43]
-        middle = [1, 3, 6, 7, 9, 10, 16, 17, 18, 19, 22, 26, 27, 32, 33, 38, 40, 45]
-        good = [2, 8, 12, 14, 15, 23, 24, 29, 31, 37, 41]
+        bad = [11, 13, 21, 28, 30, 35, 36, 39, 42]
+        middle = [1, 3, 7, 9, 10, 16, 17, 18, 19, 22, 26, 27, 32, 33, 40, 43, 45]
+        good = [2, 6, 8, 12, 14, 15, 23, 24, 29, 31, 37, 38, 41]
 
     else:
         raise RuntimeError('请选择正确的数据集!')

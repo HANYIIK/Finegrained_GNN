@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from models import FineGrained2GNN
+from models_v2 import FineGrained2GNN
 from dataset import EEGDataset
 from functions import get_config, get_folders
 from utils import train_utils, model_utils, xlsx_utils
