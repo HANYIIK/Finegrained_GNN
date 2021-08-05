@@ -127,20 +127,22 @@ if __name__ == '__main__':
     if my_args.dataset_name == 'SEED' and my_args.dataset_size == 'large' and my_args.people_num == 45:
         raise RuntimeError('处理 SEED large 数据之前，请先将 people_num 改为 15！')
 
-    run_select = int(input('选择要跑的人群(1-full, 2-bad, 3-good):'))
-    run_dic = {'1': '全部', '2': '不达标', '3': '达标'}
+    run_select = int(input('选择要跑的人群(1-full, 2-bad, 3-middle, 4-good):'))
+    run_dic = {'1': '全部', '2': '较差', '3': '中等', '4': '较好'}
 
     if my_args.dataset_name == 'MPED':
-        bad = []
-        good = []
+        raise RuntimeError("目前不支持 MPED！")
 
     elif my_args.dataset_name == 'SEED':
-        bad = [2, 3, 5, 6, 8, 11, 12, 13, 14, 15, 17, 18, 20, 21, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32, 34, 35, 37, 38, 39, 40, 42, 43, 44, 45]
+        bad = [3, 6, 11, 12, 13, 14, 15, 17, 18, 20, 21, 26, 28, 29, 31, 34, 35, 37, 39]
+        middle = [2, 5, 22, 23, 24, 27, 30, 32, 38, 40]
         good = [1, 4, 19, 25, 33, 36, 41]
 
     elif my_args.dataset_name == 'SEED_IV':
-        bad = [3, 6, 11, 13, 16, 17, 18, 19, 21, 26, 27, 28, 30, 33, 35, 36, 38, 39, 40, 42, 43]
-        good = [1, 2, 7, 8, 9, 10, 12, 14, 15, 22, 23, 24, 29, 31, 32, 37, 41, 45]
+        # update
+        bad = [11, 13, 21, 28, 30, 35, 36, 39, 42, 43]
+        middle = [1, 3, 6, 7, 9, 10, 16, 17, 18, 19, 22, 26, 27, 32, 33, 38, 40, 45]
+        good = [2, 8, 12, 14, 15, 23, 24, 29, 31, 37, 41]
 
     else:
         raise RuntimeError('请选择正确的数据集!')
@@ -155,7 +157,7 @@ if __name__ == '__main__':
                 print(f'第{people}个人跑完了！')
 
     elif run_select == 2:
-        # ② 跑不达标的
+        # ② 跑烂
         for t in range(my_args.times):
             for people in bad:
                 trainer = Trainer(my_args, people_index=people)
@@ -164,7 +166,16 @@ if __name__ == '__main__':
                 print(f'第{people}个人跑完了！')
 
     elif run_select == 3:
-        # ③ 跑达标的
+        # ③ 跑中
+        for t in range(my_args.times):
+            for people in middle:
+                trainer = Trainer(my_args, people_index=people)
+                print(f'正在跑的是:{my_args.dataset_name}|{my_args.dataset_size}|{run_dic[str(run_select)]}|第{people}个人!')
+                trainer.run()
+                print(f'第{people}个人跑完了！')
+
+    elif run_select == 4:
+        # ④ 跑好
         for t in range(my_args.times):
             for people in good:
                 trainer = Trainer(my_args, people_index=people)
