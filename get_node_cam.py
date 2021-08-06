@@ -13,21 +13,16 @@
 import random
 import os
 import numpy as np
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-import pdb
 
 import torch
-from torch import nn
 import torch.nn.functional as F
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
 from models import FineGrained2GNN
 from models import FineGrained3GNN
 from dataset import EEGDataset
-from functions import get_config, get_folders
-from utils import train_utils, model_utils, xlsx_utils
+from functions import get_config
+
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 EXPERTS = 3

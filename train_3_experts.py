@@ -6,9 +6,6 @@
 # @Function : 3 个 GNN 的 train_2_experts.py
 import random
 import numpy as np
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-import pdb
 
 import torch
 from torch import nn
@@ -16,7 +13,7 @@ import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
-from models_v2 import FineGrained3GNN
+from models import FineGrained3GNN
 from dataset import EEGDataset
 from functions import get_config, get_folders
 from utils import train_utils, model_utils, xlsx_utils
@@ -134,7 +131,7 @@ if __name__ == '__main__':
         raise RuntimeError("目前不支持 MPED！")
 
     elif my_args.dataset_name == 'SEED':
-        bad = [3, 6, 11, 12, 13, 14, 15, 17, 18, 20, 21, 26, 28, 29, 31, 34, 35, 37, 39]
+        bad = [3, 6, 8, 11, 12, 13, 14, 15, 17, 18, 20, 21, 26, 28, 29, 31, 34, 35, 37, 39, 42, 43, 44, 45]
         middle = [2, 5, 22, 23, 24, 27, 30, 32, 38, 40]
         good = [1, 4, 19, 25, 33, 36, 41]
 
