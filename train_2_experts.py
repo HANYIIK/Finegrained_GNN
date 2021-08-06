@@ -4,11 +4,8 @@
 # @Author   : Hanyiik
 # @File     : train_2_experts.py
 # @Function : 训练模型
-import random
+
 import numpy as np
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-import pdb
 
 import torch
 from torch import nn

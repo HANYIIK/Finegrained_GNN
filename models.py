@@ -4,6 +4,7 @@
 # @Author   : Hanyiik
 # @File     : models.py
 # @Function : Model 部分
+
 from scipy.sparse import csr_matrix
 import numpy as np
 import copy
@@ -12,7 +13,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from grad_cam import GradCam, GradCam_filter
+from grad_cam import GradCam
 from utils import graph_utils
 from utils import model_utils
 

@@ -4,7 +4,7 @@
 # @Author   : Hanyiik
 # @File     : dataset.py
 # @Function : 用于 ChebNet 的 EEG 数据集
-import torch
+
 from torch.utils.data import Dataset
 
 from scipy.sparse import csr_matrix

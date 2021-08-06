@@ -4,8 +4,8 @@
 # @Author   : Hanyiik
 # @File     : grad_cam.py
 # @Function : 视觉解释模块
+
 import torch
-import torch.nn.functional as F
 import numpy as np
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")

@@ -10,7 +10,7 @@
 # @Author   : Hanyiik
 # @File     : get_final_cam.py
 # @Function : 得到 node heat
-import random
+
 import os
 import numpy as np
 

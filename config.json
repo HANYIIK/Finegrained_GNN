@@ -61,8 +61,8 @@
     },
 
     "ChebNet": {
-      "K": 3,
-      "filter_num": 256
+      "K": 2,
+      "filter_num": 32
     }
   }
 }
