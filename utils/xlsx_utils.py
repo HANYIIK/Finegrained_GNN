@@ -4,16 +4,15 @@
 # @Author   : Hanyiik
 # @File     : xlsx_utils.py
 # @Function : 保持 .xlsx 文件里的 acc 始终最大
-import pdb
+
 import os
-import sys
 import shutil
 import numpy as np
 import pandas as pd
 
 
 # 【更新哪个数据集】
-DATASET_NAME = 'SEED_IV'
+DATASET_NAME = 'SEED'
 
 # 跑的 model 的版本
 EXPERTS = '2 Experts'
