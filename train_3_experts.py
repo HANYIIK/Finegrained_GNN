@@ -124,8 +124,8 @@ if __name__ == '__main__':
     if my_args.dataset_name == 'SEED' and my_args.dataset_size == 'large' and my_args.people_num == 45:
         raise RuntimeError('处理 SEED large 数据之前，请先将 people_num 改为 15！')
 
-    run_select = int(input('选择要跑的人群(1-up, 2-bad, 3-middle, 4-good):'))
-    run_dic = {'1': '有提升空间的', '2': '较差', '3': '中等', '4': '较好'}
+    run_select = int(input('选择要跑的人群(1-up, 2-bad, 3-middle, 4-good, 5-all):'))
+    run_dic = {'1': '有提升空间的', '2': '较差', '3': '中等', '4': '较好', '5': '全部'}
 
     if my_args.dataset_name == 'MPED':
         raise RuntimeError("目前不支持 MPED！")
@@ -178,6 +178,15 @@ if __name__ == '__main__':
         # ④ 跑好
         for t in range(my_args.times):
             for people in good:
+                trainer = Trainer(my_args, people_index=people)
+                print(f'正在跑的是:{my_args.dataset_name}|{my_args.dataset_size}|{run_dic[str(run_select)]}|第{people}个人!')
+                trainer.run()
+                print(f'第{people}个人跑完了！')
+
+    elif run_select == 5:
+        # ④ 暴力全跑
+        for t in range(my_args.times):
+            for people in range(1, my_args.people_num + 1):
                 trainer = Trainer(my_args, people_index=people)
                 print(f'正在跑的是:{my_args.dataset_name}|{my_args.dataset_size}|{run_dic[str(run_select)]}|第{people}个人!')
                 trainer.run()
