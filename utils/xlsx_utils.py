@@ -123,7 +123,7 @@ def get_max_acc_in_xlsx(people_index, xls_path):
     max_acc = df[EXPERTS][df['people'] == people_index].values[0]
     return max_acc
 
-def replace_xlsx_acc(people_index, acc, xls_path):
+def  replace_xlsx_acc(people_index, acc, xls_path):
     """
     :: 功能: 更改 xlsx 里对应的 max_acc 为 acc 的值
     :: 输入: people_index - 第几个人？
