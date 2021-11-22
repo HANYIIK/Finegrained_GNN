@@ -4,6 +4,7 @@
 # @Author   : Hanyiik
 # @File     : train_3_experts.py
 # @Function : 3 个 GNN 的 train_2_experts.py
+import pdb
 
 import numpy as np
 
@@ -67,7 +68,7 @@ class Trainer(object):
                 data, labels = data.to(DEVICE), labels.to(DEVICE)
                 logits, cam_1, cam_2, mask_1, mask_2 = self.model(data, labels)
                 loss = self.criterion(logits, labels.long())
-                self.mean_loss.update(loss.cpu().detach().numpy())
+                # self.mean_loss.update(loss.cpu().detach().numpy())
 
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -109,6 +110,9 @@ class Trainer(object):
             for step, batch in enumerate(self.test_loader):
                 data, labels = batch[0].to(DEVICE), batch[1]
                 logits, cam_1, cam_2, mask_1, mask_2 = self.model(data, None)
+                pdb.set_trace()
+                loss = self.criterion(logits, labels.long())    # new code ----------
+                self.mean_loss.update(loss.cpu().detach().numpy())  # new code ----------
                 probs = F.softmax(logits, dim=-1).cpu().detach().numpy()
                 labels = labels.numpy()
                 self.mean_accuracy.update(probs, labels)
