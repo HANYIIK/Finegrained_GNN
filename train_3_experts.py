@@ -3,7 +3,7 @@
 # @Time     : 2021/6/22 2:54 下午
 # @Author   : Hanyiik
 # @File     : train_3_experts.py
-# @Function : 3 个 GNN 的 train_2_experts.py
+# @Function : 3 个 GNN 的 train.py
 import pdb
 
 import numpy as np
@@ -108,13 +108,13 @@ class Trainer(object):
         self.mean_accuracy.reset()
         with torch.no_grad():
             for step, batch in enumerate(self.test_loader):
-                data, labels = batch[0].to(DEVICE), batch[1]
+                data, labels = batch[0].to(DEVICE), batch[1].to(DEVICE)
                 logits, cam_1, cam_2, mask_1, mask_2 = self.model(data, None)
                 pdb.set_trace()
                 loss = self.criterion(logits, labels.long())    # new code ----------
                 self.mean_loss.update(loss.cpu().detach().numpy())  # new code ----------
                 probs = F.softmax(logits, dim=-1).cpu().detach().numpy()
-                labels = labels.numpy()
+                labels = labels.cpu().detach().numpy()
                 self.mean_accuracy.update(probs, labels)
         acc = self.mean_accuracy.compute()
         confusion = self.mean_accuracy.confusion()
@@ -136,14 +136,14 @@ if __name__ == '__main__':
 
     # SEED
     elif my_args.dataset_name == 'SEED':
-        up = [2, 5, 11, 13, 14, 18, 19, 23, 24, 27, 28, 30, 32, 34, 37, 38, 40]
+        up = [2, 4, 5, 11, 13, 14, 18, 19, 20, 23, 24, 27, 28, 30, 32, 34, 37, 38, 40]
         bad = [3, 6, 11, 12, 13, 14, 15, 17, 18, 21, 26, 28, 29, 31, 34, 35, 37, 39, 42]
         middle = [2, 5, 22, 23, 24, 32, 38, 40]
         good = [1, 4, 19, 20, 25, 27, 30, 33, 41]
 
     # SEED_IV
     elif my_args.dataset_name == 'SEED_IV':
-        up = []
+        up = [1, 2, 3, 7, 9, 10, 11, 12, 13, 14, 16, 18, 19, 21, 22, 24, 26, 27, 30, 32, 33, 35, 36, 39, 40, 42, 43, 45]
         bad = [11, 13, 21, 30, 35, 36, 39, 42]
         middle = [1, 3, 6, 7, 9, 10, 16, 18, 22, 26, 27, 32, 33, 40, 43, 45]
         good = [2, 8, 12, 14, 15, 17, 19, 23, 24, 28, 29, 31, 37, 38, 41]
