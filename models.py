@@ -4,6 +4,7 @@
 # @Author   : Hanyiik
 # @File     : models.py
 # @Function : Model 部分
+import pdb
 
 from scipy.sparse import csr_matrix
 import numpy as np
@@ -238,8 +239,19 @@ class FineGrained3GNN(nn.Module):
         pr_gate = F.softmax(my_gate, dim=1)  # (100, 3)
 
         logits_gate = torch.stack([logits_1, logits_2, logits_3], dim=-1)  # (100, 7, 3)
-        logits_gate = logits_gate * pr_gate.view(pr_gate.size()[0], 1, pr_gate.size()[1])
-        logits_gate = logits_gate.sum(-1)
+        '''
+        stack之后的，一个样本(7, 3)
+                logits_1    logits_2    logits_3
+        cls_1   prob_1_1    prob_1_2    prob_1_3
+        cls_2   prob_2_1    prob_2_2    prob_2_3
+        cls_3   prob_3_1    prob_3_2    prob_3_3
+        ...     ...         ...         ...
+        cls_7   prob_7_1    prob_7_2    prob_7_3
+        
+        【注】prob_{对于第n个类别}_{专家x所判定的损失结果}
+        '''
+        logits_gate = logits_gate * pr_gate.view(pr_gate.size()[0], 1, pr_gate.size()[1])   # (100, 7, 3)
+        logits_gate = logits_gate.sum(-1)   # (100, 7)
 
         return logits_gate, nodes_cam_1, nodes_cam_2, mask_1, mask_2
 

@@ -12,7 +12,7 @@ import pandas as pd
 
 
 # 【更新哪个数据集】
-DATASET_NAME = 'SEED'
+DATASET_NAME = 'SEED_IV'
 
 # 跑的 model 的版本
 EXPERTS = '2 Experts'
@@ -27,15 +27,15 @@ XLS_PATH= f'../res/{DATASET_NAME}/result.xlsx'
 # ================================================ FROM ================================================
 # 【 xls 文件路径】
 UPDATE_XLS_PATH = f'C:/Users/user/Desktop/res/{DATASET_NAME}/result.xlsx'
-# UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/result.xlsx'
+# UPDATE_XLS_PATH = f'/Users/hanyiik/Desktop/3_experts_res/{DATASET_NAME}/result.xlsx'
 
 # 【 state_dict 文件路径】
 UPDATE_STATE_DICT_PATH = f'C:/Users/user/Desktop/res/{DATASET_NAME}/state_dict/'
-# UPDATE_STATE_DICT_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/state_dict/'
+# UPDATE_STATE_DICT_PATH = f'/Users/hanyiik/Desktop/3_experts_res/{DATASET_NAME}/state_dict/'
 
 # 【 confusion_matrix 文件路径】
 UPDATE_CONFU_DICT_PATH = f'C:/Users/user/Desktop/res/{DATASET_NAME}/confusion_matrix/'
-# UPDATE_CONFU_DICT_PATH = f'/Users/hanyiik/Desktop/res/{DATASET_NAME}/confusion_matrix/'
+# UPDATE_CONFU_DICT_PATH = f'/Users/hanyiik/Desktop/3_experts_res/{DATASET_NAME}/confusion_matrix/'
 # ======================================================================================================
 
 
@@ -99,8 +99,8 @@ def use_txt_update_xlsx(txt_path, xls_path):
     :: 输入: txt_path - .txt 文件路径
             xls_path - .xlsx 文件路径
     :: 输出: 是否替换
-    :: 用法: update_max_acc(txt_path='../res/k=2、kernel=32、rate=0.5、epoch=100.txt',
-                            xls_path='../res/result.xlsx')
+    :: 用法: update_max_acc(txt_path='../3_experts_res/k=2、kernel=32、rate=0.5、epoch=100.txt',
+                            xls_path='../3_experts_res/result.xlsx')
     """
     result_list = extract_txt_accs(txt_path)
     for res in result_list:
@@ -114,7 +114,7 @@ def get_max_acc_in_xlsx(people_index, xls_path):
     :: 输入: people_index - 第几个人?
             xls_path - .xlsx文件路径
     :: 输出: 第 people_index 个人的 max_acc (numpy 类型的 (1,) 数值, float64)
-    :: 用法: max_acc = get_max_acc_in_xlsx(people_index=1, xls_path='../res/result.xlsx')
+    :: 用法: max_acc = get_max_acc_in_xlsx(people_index=1, xls_path='../3_experts_res/result.xlsx')
     """
     df = pd.read_excel(xls_path, engine='openpyxl',
                        sheet_name='Sheet1', usecols=['people', EXPERTS],
