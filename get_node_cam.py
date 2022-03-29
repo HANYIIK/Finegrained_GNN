@@ -38,7 +38,7 @@ class Node_heater(object):
         self.adj_matrix = EEGDataset.build_graph()
 
         self.max_acc = None
-        self.state_dict_path = f'./{EXPERTS}_experts_res/{self.args.dataset_name}/state_dict/{self.people_index}_params.pkl'
+        self.state_dict_path = f'./{EXPERTS}_experts_with_kl_res/{self.args.dataset_name}/state_dict/{self.people_index}_params.pkl'
 
         # 制作 DataLoader
         self.test_dataset = EEGDataset(self.args, istrain=False, people=self.people_index)
