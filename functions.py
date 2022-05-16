@@ -25,7 +25,7 @@ def create_npy(args):
     """
     train_dataset_list, train_labelset_list, test_dataset_list, test_labelset_list = read_mat(args)
 
-    if args.dataset_name == 'MPED' or args.dataset_name == 'SEED_IV':
+    if args.dataset_name == 'MPED' or args.dataset_name == 'SEED_IV_high':
         for r in range(1, args.people_num+1):
             np.save(args.npy + args.dataset_name + '/' + 'data_' + args.dataset_size + '/train_dataset_{}.npy'.format(r),
                     train_dataset_list[r - 1])
@@ -50,7 +50,7 @@ def create_npy(args):
             print('成功保存第{}个人的数据！'.format(r))
 
     else:
-        raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV")
+        raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV_high")
 
 def read_mat(args):
     """
@@ -74,7 +74,7 @@ def read_mat(args):
             :: 输入: filename = 要读取的 .mat 文件名
                     LORS: 0 ---> MPED
                           1 ---> SEED
-                          2 ---> SEED_IV
+                          2 ---> SEED_IV_high
             :: 输出: numpy 格式的 traindata, trainlabel, testdata, testlabel
             :: 用法:
         """
@@ -112,7 +112,7 @@ def read_mat(args):
             get_trainlabel = np.squeeze(arrays['trainlabel']).astype(np.int)
             get_testlabel = np.squeeze(arrays['testlabel']).astype(np.int)
         else:
-            raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV")
+            raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV_high")
 
         return get_traindata, get_trainlabel, get_testdata, get_testlabel
 
@@ -168,7 +168,7 @@ def read_mat(args):
             else:
                 raise RuntimeError("请输入正确的数据集大小: small/large")
 
-        elif args.dataset_name == 'SEED_IV':
+        elif args.dataset_name == 'SEED_IV_high':
             if args.dataset_size == 'small':
                 traindata, trainlabel, testdata, testlabel = \
                     load_one_mat_file('SEED4forGNN{}.mat'.format(j), flag=2)
@@ -187,7 +187,7 @@ def read_mat(args):
                 raise RuntimeError("请输入正确的数据集大小: small/large")
 
         else:
-            raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV")
+            raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV_high")
 
         traindata_list.append(traindata)
         trainlabel_list.append(trainlabel)
@@ -212,7 +212,7 @@ def load_one_people_npy(args, people=5):
     if people == 0:
         raise RuntimeError("改代码去吧，people 这个参数要从 1 开始循环(提示：for people in range(1, args.people_num+1):)")
     else:
-        if args.dataset_name == 'MPED' or args.dataset_name == 'SEED' or args.dataset_name == 'SEED_IV':
+        if args.dataset_name == 'MPED' or args.dataset_name == 'SEED' or args.dataset_name == 'SEED_IV_high':
             traindata = np.load(
                 args.npy + args.dataset_name + '/data_' + args.dataset_size + '/train_dataset_{}.npy'.format(people))
             trainlabel = np.load(
@@ -222,7 +222,7 @@ def load_one_people_npy(args, people=5):
             testlabel = np.load(
                 args.npy + args.dataset_name + '/data_' + args.dataset_size + '/test_labelset_{}.npy'.format(people))
         else:
-            raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV")
+            raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV_high")
 
     return traindata, trainlabel, testdata, testlabel
 
@@ -265,7 +265,7 @@ def load_npy(args):
     testdata_list = []
     testlabel_list = []
 
-    if args.dataset_name == 'MPED' or args.dataset_name == 'SEED' or args.dataset_name == 'SEED_IV':
+    if args.dataset_name == 'MPED' or args.dataset_name == 'SEED' or args.dataset_name == 'SEED_IV_high':
         for k in range(1, args.people_num+1):
             traindata = np.load(args.npy + args.dataset_name + '/data_' + args.dataset_size + '/train_dataset_{}.npy'.format(k))
             trainlabel = np.load(args.npy + args.dataset_name + '/data_' + args.dataset_size + '/train_labelset_{}.npy'.format(k))
@@ -277,7 +277,7 @@ def load_npy(args):
             testdata_list.append(testdata)
             testlabel_list.append(testlabel)
     else:
-        raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV")
+        raise RuntimeError("请输入正确的数据集名称: MPED/SEED/SEED_IV_high")
 
     return traindata_list, trainlabel_list, testdata_list, testlabel_list
 

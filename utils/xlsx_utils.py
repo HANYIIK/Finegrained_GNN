@@ -118,7 +118,7 @@ def get_max_acc_in_xlsx(people_index, xls_path):
     """
     df = pd.read_excel(xls_path, engine='openpyxl',
                        sheet_name='Sheet1', usecols=['people', EXPERTS],
-                       dtype={'people': int, EXPERTS: float}).fillna(0)
+                       dtype={'people': float, EXPERTS: float}).fillna(0)
     df = pd.DataFrame(df)
     max_acc = df[EXPERTS][df['people'] == people_index].values[0]
     return max_acc

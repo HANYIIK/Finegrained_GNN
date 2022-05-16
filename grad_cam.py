@@ -59,8 +59,8 @@ class GradCam:
 
     def __call__(self, input_x, index):
         features, output = self.extractor(input_x.to(DEVICE))
-        # features.shape = (100, 62, 160)
-        # output.shape = (100, 7)
+        # features.shape = (100, 62, 160)  特征图
+        # output.shape = (100, 7)   经过全连接层后的 y_score
 
         if output.dim() == 1:
             output = output.unsqueeze(0)
@@ -76,7 +76,7 @@ class GradCam:
         self.model.zero_grad()
         one_hot.backward(retain_graph=True)
 
-        grads_val = self.extractor.get_gradients()[-1]  # (100, 62, 160)
+        grads_val = self.extractor.get_gradients()[-1]  # (100, 62, 160)    y_score 对于特征图的微分
 
         weight = grads_val.cpu().detach().numpy()   # (100, 62, 160)
         weight = np.mean(weight, axis=1)       # (100, 160)

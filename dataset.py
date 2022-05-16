@@ -4,6 +4,7 @@
 # @Author   : Hanyiik
 # @File     : dataset.py
 # @Function : 用于 ChebNet 的 EEG 数据集
+import pdb
 
 from torch.utils.data import Dataset
 
@@ -24,10 +25,10 @@ class EEGDataset(Dataset):
             adj = train_dataset.build_graph()
 
           ① SEED_small:
-              train_data: (1384, 62, 5)
-              train_label: (1384,)
-              test_data: (2010, 62, 5)
-              test_label: (2010,)
+              train_data: (2010, 62, 5)
+              train_label: (2010,)
+              test_data: (1384, 62, 5)
+              test_label: (1384,)
               people: 45
 
           ② MPED_small:

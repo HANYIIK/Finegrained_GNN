@@ -3,7 +3,7 @@
 
       "platform": "windows",
 
-      "dataset_name": "SEED_IV",
+      "dataset_name": "MPED",
       "dataset_size": "small",
 
       "normalize": 1,

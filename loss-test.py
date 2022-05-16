@@ -39,10 +39,10 @@ def kl_loss(x_pred, x_gt, target):
 
 
 if __name__ == '__main__':
-    x_input = torch.randn(BATCH_SIZE, CLASS_NUM)  # 随机生成输入 logits (10, 4)
+    x_input = torch.randn(BATCH_SIZE, CLASS_NUM)  # 随机生成输入 logits (5, 3)
     print('x_input:\n', x_input, end='\n\n')
 
-    y_input = torch.randn(BATCH_SIZE, CLASS_NUM)  # 随机生成输入 logits (10, 4)
+    y_input = torch.randn(BATCH_SIZE, CLASS_NUM)  # 随机生成输入 logits (5, 3)
     print('y_input:\n', y_input, end='\n\n')
 
     target = torch.tensor([1, 2, 0, 1, 1])  # 设置输出具体值

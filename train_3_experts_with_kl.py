@@ -37,12 +37,33 @@ def exclude_gt(logit, target, is_log=False):
 
     return mask * logit     # (batch_size, class_num)
 
-
 def kl_loss(x_pred, x_gt, target):
-    # KL Divergence for branch 1 and branch 2
+    # KL-Divergence for branch 1 and branch 2
     kl_pred = exclude_gt(x_pred, target, is_log=True)
     kl_gt = exclude_gt(x_gt, target, is_log=False)
     tmp_loss = F.kl_div(kl_pred, kl_gt, reduction='none')   # P = 0.7414    log(Q) = -1.4167    KL(P||Q) = 0.7414 * (ln(0.7414) + 1.4167) = 0.8285
+    tmp_loss = torch.exp(-tmp_loss).mean()
+    return tmp_loss
+
+
+def mask_filter(logit, target):
+    mask = torch.ones_like(logit)
+    for i in range(logit.size(0)):
+        mask[i, target[i]] = 0
+
+    return mask * logit
+
+def js_loss(z1, z2, target):
+    # JS-Divergence for branch 1 and branch 2
+    z1 = F.softmax(z1, dim=-1)
+    z2 = F.softmax(z2, dim=-1)
+    log_mean = torch.log((z1 + z2) / 2)
+
+    z1 = mask_filter(z1, target)
+    z2 = mask_filter(z2, target)
+    log_mean = mask_filter(log_mean, target)
+
+    tmp_loss = (F.kl_div(log_mean, z1, reduction='none') + F.kl_div(log_mean, z2, reduction='none')) / 2
     tmp_loss = torch.exp(-tmp_loss).mean()
     return tmp_loss
 
@@ -66,8 +87,8 @@ class Trainer(object):
         self.train_dataset = EEGDataset(self.args, istrain=True, people=self.people_index)
         self.test_dataset = EEGDataset(self.args, istrain=False, people=self.people_index)
 
-        self.train_loader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True)
-        self.test_loader = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False)
+        self.train_loader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=8)
+        self.test_loader = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=8)
 
         # 加载模型
         self.model = FineGrained3GNN(self.args, adj=self.adj_matrix).to(DEVICE)
@@ -95,8 +116,9 @@ class Trainer(object):
 
                 # ----- the new Loss
                 my_loss = [self.criterion(logits_list[3], labels.long()),   # Gate Loss
-                           kl_loss(logits_list[1], logits_list[0], labels), # KL(E1 || E2)
-                           kl_loss(logits_list[2], logits_list[1], labels)] # KL(E2 || E3)
+                           js_loss(logits_list[1], logits_list[0], labels), # JS(E1 || E2)
+                           js_loss(logits_list[2], logits_list[1], labels), # JS(E2 || E3)
+                           js_loss(logits_list[0], logits_list[2], labels)] # JS(E3 || E1)
                 final_loss = sum(my_loss)
                 my_loss.append(final_loss)
 
@@ -106,7 +128,10 @@ class Trainer(object):
                 my_loss[-1].backward()
                 self.optimizer.step()
 
+                # print(f'---------- EPOCH: {epoch} | STEP: {step} | LOSS Gate: {my_loss[0]} | LOSS E1 and E2: {my_loss[1]} | LOSS E2 and E3: {my_loss[2]} | LOSS E3 and E1: {my_loss[3]} ----------')
+
                 if step % 3 == 0:
+                    # print('start test!')
                     acc, confusion = self.test()
                     if acc > self.max_acc:
                         # 准备改 xlsx 之前，先确认一下 xlsx 里面的 max_acc 是否被其他进程改过
@@ -161,16 +186,17 @@ if __name__ == '__main__':
     run_dic = {'1': '有提升空间的', '2': '较差', '3': '中等', '4': '较好', '5': '全部'}
 
     if my_args.dataset_name == 'MPED':
-        raise RuntimeError("目前不支持 MPED！")
+        up = []
+        bad = [3, 7, 11, 12, 13, 14, 15, 16, 19, 25, 26, 27, 30]
+        middle = []
+        good = [1, 2, 4, 5, 6, 8, 9, 10, 17, 18, 20, 21, 22, 23, 24, 28, 29]
 
     # SEED
     elif my_args.dataset_name == 'SEED':
-        up = [1, 2, 4, 5, 11, 12, 13, 14, 15, 18, 19, 20, 23, 24,
-              26, 27, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]
-
-        bad = [2, 12, 18, 20, 28, 30, 36, 38, 39, 40]
+        up = []
+        bad = [2, 5, 11, 13, 14, 18, 27, 28, 30, 32, 34, 37, 38, 40]
         middle = []
-        good = []
+        good = [1, 4, 19, 20, 23, 24, 41]
 
     # SEED_IV
     elif my_args.dataset_name == 'SEED_IV':

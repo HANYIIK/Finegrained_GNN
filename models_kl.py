@@ -203,7 +203,7 @@ class FineGrained3GNN(nn.Module):
             filter_num=self.filter_num,  # 32
             K=self.K,  # 2
             laplacians=laplacians_list_2,
-            dobias=False
+            dobias=True
         ).to(DEVICE)
 
         gc_output_2 = self.gc_expert_2(input_box_1)  # (100, 62, 160)
@@ -339,12 +339,14 @@ class ChebshevGCNN(nn.Module):
 
     def brelu(self, x):
         """Bias and ReLU. One bias per filter."""
-        return F.relu(x + self.bias)
+        if self.dobias:
+            return F.relu(x + self.bias)
+        else:
+            return F.relu(x)
 
     def forward(self, x):
         x = self.chebyshev(x)
-        if self.dobias:
-            x = self.brelu(x)
+        x = self.brelu(x)
         return x
 
 
